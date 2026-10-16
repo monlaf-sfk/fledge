@@ -32,7 +32,12 @@ then sign-up logs the user in immediately.
 | `/signup` | Role picker + name, email, password. Server-side validation |
 | `/login` | Email + password. Supports `?next=` (same-site paths only) |
 | `/auth/callback` | Email confirmation link → session |
-| `/dashboard` | Protected. Shows role-specific next steps (onboarding is the next sprint) |
+| `/dashboard` | Counters (Interested sent, Saved, Matches) and links |
+| `/onboarding` | Role-specific profile form. Card fields are public; contacts, deck, metrics unlock after a match |
+| `/discover` | Ranked feed with Pass / Save / Interested (keys ← ↓ →). Match pop-up on mutual interest |
+| `/saved` | Saved profiles, can still press Pass or Interested |
+| `/matches`, `/matches/[id]` | Matches list, unlocked details, chat (polls every 5 s) |
+| `/insights` | Live funnel from the database (demo matches excluded) and own action counts |
 
 ## Where things live
 
@@ -45,7 +50,30 @@ then sign-up logs the user in immediately.
 > So "Add user" in the Supabase dashboard or a future Google OAuth button fails with
 > `Invalid role: null` until that flow also passes a role.
 
+## Product logic
+
+- **Fit score** (`src/lib/scoring.ts`): industry 35 · stage 30 · geography 20 · ticket 15.
+- **Match**: DB trigger `handle_swipe` creates a match when both sides press Interested,
+  whoever is second. Clients cannot insert matches.
+- **Progressive disclosure**: `startups` / `investor_profiles` are readable by any signed-in user;
+  `startup_private` / `investor_private` only by the owner or a matched party (RLS).
+- **Demo profiles** (`0003_demo_profiles.sql`): 12 startups + 10 investors, `is_demo = true`,
+  labelled DEMO on cards. Some auto-reciprocate Interested so the demo shows a match. Demo matches
+  are excluded from the Insights funnel.
+- **Events** (`events` table): `signup_completed`, `profile_completed`, `card_viewed`,
+  `card_action`, `match_created` (from the trigger), `message_sent`. `funnel_summary()` returns
+  aggregate counts only.
+
+## Migrations
+
+Apply new files in `supabase/migrations` **before** pushing code that uses them
+(push to `main` deploys immediately):
+
+```bash
+supabase link --project-ref phkaexasrrbgqjxvizqn
+supabase db push
+```
+
 ## Deploy
 
-Push to GitHub → import in Vercel → add the three env vars → add the Vercel URL to Supabase
-Redirect URLs.
+Connected: every push to `main` on `monlaf-sfk/fledge` deploys to Vercel production.

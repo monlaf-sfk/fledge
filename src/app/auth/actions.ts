@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { safeNext } from "@/lib/safe-redirect";
+import { track } from "@/lib/track";
 
 export type Role = "founder" | "investor";
 
@@ -49,7 +50,8 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
     return { message: `Check ${email} — we sent a confirmation link.`, fields };
   }
 
-  redirect("/dashboard");
+  if (data.user) await track(supabase, data.user.id, "signup_completed", { role });
+  redirect("/onboarding");
 }
 
 export async function signIn(_prev: AuthState, formData: FormData): Promise<AuthState> {

@@ -199,7 +199,7 @@ export default function Home() {
           <h3 className="mt-6 font-display text-4xl leading-tight">Deal flow filtered by your thesis.</h3>
           <ul className="mt-8 space-y-3 text-ink-soft">
             <li>· Structured startup cards you can screen in seconds</li>
-            <li>· AI assistant: key metrics, strengths &amp; risks, comparables</li>
+            <li>· Coming next: AI assistant for key metrics, strengths &amp; risks, comparables</li>
             <li>· Only founders who want to talk to you reach out</li>
           </ul>
           <Link href="/signup?role=investor" className="mt-10 inline-flex w-fit rounded-full bg-ink px-6 py-3 font-medium text-paper transition hover:bg-signal">
