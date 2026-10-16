@@ -148,3 +148,33 @@ html:not(.motion-ready) .story-screen.s-0 { opacity: 1; transform: none; }
   [data-tilt] { transform: none; }
   .light-words span { opacity: 1; }
 }
+
+/* Magnetic buttons ease back when the pointer leaves */
+[data-magnetic] { transition: translate 0.35s cubic-bezier(0.2, 0.7, 0.2, 1), background-color 0.2s, color 0.2s, border-color 0.2s; }
+
+/* Pointer spotlight over the hero */
+.spotlight {
+  background: radial-gradient(520px circle at var(--sx, 70%) var(--sy, 40%), rgba(244, 239, 228, 0.09), transparent 60%);
+}
+
+/* Horizontal rail: track slides left while its pinned section scrolls */
+.rail-track { transform: translateX(calc(var(--p, 0) * (100vw - 100%))); will-change: transform; }
+
+/* Grain shimmer on headline accent */
+@keyframes sheen { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+.sheen {
+  background: linear-gradient(100deg, var(--signal) 40%, #ffb347 50%, var(--signal) 60%) 0 0 / 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: sheen 5s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rail-track { transform: none; }
+  .sheen { animation: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-rail] { height: auto; }
+  [data-rail] > div { position: static; height: auto; padding-block: 6rem; }
+  [data-rail] .rail-track { width: auto; flex-wrap: wrap; justify-content: center; }
+}

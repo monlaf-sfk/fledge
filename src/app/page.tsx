@@ -3,7 +3,9 @@
 // animated fit-score gauge, pop-in comparison, staggered market rings, iris-reveal CTA.
 // Motion engine: src/components/landing/motion.tsx. Static under prefers-reduced-motion.
 import Link from "next/link";
+import { Constellation } from "@/components/landing/constellation";
 import { LandingMotion } from "@/components/landing/motion";
+import { SwipeDemo } from "@/components/landing/swipe-demo";
 import { Logo } from "@/components/logo";
 import { PageView, TrackedLink } from "@/components/public-track";
 
@@ -25,6 +27,17 @@ const COMPARE: { row: string; li: boolean | string; cb: boolean | string; fl: bo
   { row: "Contact inside the product", li: "capped", cb: false, fl: true },
   { row: "Only mutual interest, no cold messages", li: false, cb: false, fl: true },
   { row: "Free for the core flow", li: "partly", cb: "partly", fl: true },
+];
+
+const RAIL = [
+  { name: "Tenge Ledger", pitch: "Automated bookkeeping for small businesses.", stage: "Seed", fit: 92, industry: "Fintech", geo: "Kazakhstan" },
+  { name: "Tumar AI", pitch: "AI support agents that speak Kazakh.", stage: "Seed", fit: 85, industry: "AI/ML", geo: "Central Asia" },
+  { name: "Caravan Freight", pitch: "Digital freight matching for trucking.", stage: "Seed", fit: 80, industry: "Logistics", geo: "Central Asia" },
+  { name: "Qadam Learn", pitch: "Coding courses in Kazakh and Russian.", stage: "Pre-seed", fit: 70, industry: "Edtech", geo: "Kazakhstan" },
+  { name: "AgroScan", pitch: "Drone crop monitoring for wheat farms.", stage: "Seed", fit: 65, industry: "Agritech", geo: "Kazakhstan" },
+  { name: "Shipa Health", pitch: "Clinic booking with verified reviews.", stage: "Pre-seed", fit: 55, industry: "Healthtech", geo: "Uzbekistan" },
+  { name: "PayRoute", pitch: "Cross-border payroll for CIS teams.", stage: "Series A", fit: 50, industry: "Fintech", geo: "CIS" },
+  { name: "GreenSteppe", pitch: "Solar micro-grids for remote farms.", stage: "Idea", fit: 35, industry: "Climate", geo: "Kazakhstan" },
 ];
 
 const SPARKS = Array.from({ length: 18 }, (_, i) => ({
@@ -102,11 +115,15 @@ export default function Home() {
       <LandingMotion />
 
       {/* ======================================================= HERO (dark, layered) */}
-      <section className="relative isolate min-h-[100svh] overflow-hidden bg-ink text-paper">
+      <section data-spotlight className="relative isolate min-h-[100svh] overflow-hidden bg-ink text-paper">
+        {/* depth-2: live founder–investor network */}
+        <Constellation />
+        {/* depth-4: light that follows the pointer */}
+        <div aria-hidden className="spotlight pointer-events-none absolute inset-0 -z-10" />
         {/* depth-0: grid */}
         <div
           aria-hidden
-          className="absolute inset-0 -z-10 opacity-[0.12]"
+          className="absolute inset-0 -z-20 opacity-[0.07]"
           style={{
             backgroundImage: "linear-gradient(var(--paper) 1px, transparent 1px), linear-gradient(90deg, var(--paper) 1px, transparent 1px)",
             backgroundSize: "64px 64px",
@@ -114,7 +131,7 @@ export default function Home() {
           }}
         />
         {/* depth-1: glows */}
-        <div aria-hidden className="absolute inset-0 -z-10">
+        <div aria-hidden className="absolute inset-0 -z-20">
           <div className="glow left-[55%] top-[10%] h-[38vw] w-[38vw] bg-signal/35" />
           <div className="glow left-[-10%] top-[45%] h-[34vw] w-[34vw] bg-[#1f8a62]/40" style={{ animationDelay: "-6s" }} />
         </div>
@@ -131,7 +148,7 @@ export default function Home() {
             <a href="#how" className="hidden px-3 py-2 text-paper/60 hover:text-paper sm:inline">How it works</a>
             <a href="#why" className="hidden px-3 py-2 text-paper/60 hover:text-paper sm:inline">Why Fledge</a>
             <Link href="/login" className="px-2 py-2 font-medium hover:text-signal sm:px-3">Log in</Link>
-            <TrackedLink cta="nav_join" href="/signup" className="rounded-full bg-paper px-3 py-2 font-medium text-ink sm:px-4 transition hover:bg-signal hover:text-white">
+            <TrackedLink data-magnetic cta="nav_join" href="/signup" className="rounded-full bg-paper px-3 py-2 font-medium text-ink sm:px-4 transition hover:bg-signal hover:text-white">
               Join Fledge
             </TrackedLink>
           </nav>
@@ -146,21 +163,23 @@ export default function Home() {
               <br />
               <span className="converge-l" style={{ "--d": 340 } as Vars}>pitching.</span>
               <br />
-              <em className="converge-r font-normal italic text-signal" style={{ "--d": 520 } as Vars}>Start matching.</em>
+              <em className="converge-r font-normal italic" style={{ "--d": 520 } as Vars}>
+                <span className="sheen">Start matching.</span>
+              </em>
             </h1>
             <p className="rise mt-8 max-w-md text-lg leading-relaxed text-paper/70" style={{ animationDelay: "700ms" }}>
               Fledge shows founders the investors who fit their stage, sector and raise — and shows investors only
               startups inside their thesis. You connect when interest is mutual.
             </p>
             <div className="rise mt-10 flex flex-col gap-3 sm:flex-row" style={{ animationDelay: "850ms" }}>
-              <TrackedLink cta="hero_founder" href="/signup?role=founder" className="group inline-flex items-center justify-between gap-6 rounded-2xl bg-signal px-6 py-4 text-white transition hover:bg-paper hover:text-ink">
+              <TrackedLink data-magnetic cta="hero_founder" href="/signup?role=founder" className="group inline-flex items-center justify-between gap-6 rounded-2xl bg-signal px-6 py-4 text-white transition hover:bg-paper hover:text-ink">
                 <span>
                   <span className="block font-mono text-[10px] uppercase tracking-[0.2em] opacity-70">I&apos;m raising</span>
                   <span className="text-lg font-medium">Join as founder</span>
                 </span>
                 <span className="text-2xl transition group-hover:translate-x-1">→</span>
               </TrackedLink>
-              <TrackedLink cta="hero_investor" href="/signup?role=investor" className="group inline-flex items-center justify-between gap-6 rounded-2xl border-2 border-paper/40 px-6 py-4 transition hover:border-paper">
+              <TrackedLink data-magnetic cta="hero_investor" href="/signup?role=investor" className="group inline-flex items-center justify-between gap-6 rounded-2xl border-2 border-paper/40 px-6 py-4 transition hover:border-paper">
                 <span>
                   <span className="block font-mono text-[10px] uppercase tracking-[0.2em] opacity-60">I&apos;m investing</span>
                   <span className="text-lg font-medium">Join as investor</span>
@@ -195,7 +214,7 @@ export default function Home() {
 
       {/* ======================================================= PROBLEM: word lighting */}
       <section id="problem" data-scrub className="mx-auto max-w-5xl px-5 py-32">
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink-soft">The problem</p>
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink-soft" data-scramble>The problem</p>
         <p className="light-words mt-8 font-display text-[clamp(1.9rem,4.2vw,3.4rem)] leading-[1.12] tracking-tight" style={{ "--n": words.length } as Vars}>
           {words.map((w, i) => (
             <span key={i} style={{ "--i": i } as Vars}>
@@ -209,7 +228,7 @@ export default function Home() {
       <section className="relative isolate overflow-hidden bg-ink py-28 text-paper">
         <div aria-hidden className="glow -right-[10%] top-0 -z-10 h-[30vw] w-[30vw] bg-signal/25" />
         <div className="mx-auto max-w-6xl px-5">
-          <p data-reveal="up" className="font-mono text-xs uppercase tracking-[0.2em] text-paper/50">What founders told us</p>
+          <p data-reveal="up" className="font-mono text-xs uppercase tracking-[0.2em] text-paper/50" data-scramble>What founders told us</p>
           <h2 data-reveal="up" className="mt-4 max-w-3xl font-display text-[clamp(2.4rem,5vw,4.2rem)] leading-[0.95] tracking-tight" style={{ "--d": 120 } as Vars}>
             Cold outreach is a numbers game nobody wins.
           </h2>
@@ -282,7 +301,7 @@ export default function Home() {
         <div className="sticky top-0 flex h-[100svh] items-center overflow-hidden">
           <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-5 md:grid-cols-2">
             <div>
-              <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink-soft">How it works</p>
+              <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink-soft" data-scramble>How it works</p>
               <ol className="mt-8 space-y-7">
                 {STORY.map((s, i) => (
                   <li key={s.n} className={`story-step s-${i} flex gap-5`}>
@@ -352,6 +371,58 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ======================================================= TRY IT: playable swipe */}
+      <section className="relative isolate overflow-hidden bg-paper-deep/60 py-28">
+        <div aria-hidden className="glow -left-[10%] top-[20%] -z-10 h-[28vw] w-[28vw] bg-signal/20" />
+        <div className="mx-auto grid max-w-6xl items-center gap-14 px-5 md:grid-cols-[1fr_1.1fr]">
+          <div>
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink-soft" data-scramble>Try it now</p>
+            <h2 data-reveal="up" className="mt-4 font-display text-[clamp(2.4rem,5vw,4.2rem)] leading-[0.95] tracking-tight">
+              Swipe like a founder. <em className="italic text-signal">Feel the match.</em>
+            </h2>
+            <p data-reveal="up" className="mt-6 max-w-md text-lg text-ink-soft" style={{ "--d": 120 } as Vars}>
+              Drag a card right if the investor fits, left if not. Some of them are interested in you too.
+            </p>
+          </div>
+          <div data-reveal="scale">
+            <SwipeDemo />
+          </div>
+        </div>
+      </section>
+
+      {/* ======================================================= HORIZONTAL RAIL */}
+      <section data-scrub="pin" data-rail className="relative h-[300vh] bg-ink text-paper">
+        <div className="sticky top-0 flex h-[100svh] flex-col justify-center overflow-hidden">
+          <div className="mx-auto w-full max-w-6xl px-5">
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-paper/50" data-scramble>Inside the feed</p>
+            <h2 className="mt-4 font-display text-[clamp(2.2rem,4.5vw,3.6rem)] leading-[0.95] tracking-tight">
+              Every card answers <em className="italic text-signal">&ldquo;does this fit?&rdquo;</em>
+            </h2>
+          </div>
+          <div className="rail-track mt-12 flex w-max gap-6 px-5 md:px-[max(20px,calc((100vw-72rem)/2+20px))]">
+            {RAIL.map((c, i) => (
+              <article
+                key={c.name}
+                className={`w-[300px] shrink-0 rounded-[24px] p-6 ${i % 3 === 0 ? "bg-paper text-ink" : i % 3 === 1 ? "bg-moss text-paper" : "bg-signal text-white"}`}
+                style={{ rotate: `${(i % 2 ? 1 : -1) * 1.5}deg` }}
+              >
+                <div className="flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.14em] opacity-70">
+                  <span>{c.stage}</span>
+                  <span>{c.fit}% fit</span>
+                </div>
+                <h3 className="mt-6 font-display text-3xl leading-none">{c.name}</h3>
+                <p className="mt-3 text-sm opacity-80">{c.pitch}</p>
+                <div className="mt-6 h-1.5 rounded-full bg-current/15">
+                  <span className="block h-full rounded-full bg-current" style={{ width: `${c.fit}%` }} />
+                </div>
+                <p className="mt-4 font-mono text-[11px] uppercase tracking-wider opacity-60">{c.industry} · {c.geo}</p>
+              </article>
+            ))}
+          </div>
+          <p className="mx-auto mt-10 w-full max-w-6xl px-5 text-xs text-paper/40">Demo profiles from the prototype · scroll to move the rail</p>
+        </div>
+      </section>
+
       {/* ======================================================= FIT SCORE INFOGRAPHIC */}
       <section id="why" className="bg-paper-deep/60 py-28">
         <div className="mx-auto grid max-w-6xl items-center gap-14 px-5 md:grid-cols-2">
@@ -371,7 +442,7 @@ export default function Home() {
             </div>
           </div>
           <div>
-            <p data-reveal="up" className="font-mono text-xs uppercase tracking-[0.2em] text-ink-soft">Transparent ranking</p>
+            <p data-reveal="up" className="font-mono text-xs uppercase tracking-[0.2em] text-ink-soft" data-scramble>Transparent ranking</p>
             <h2 data-reveal="up" className="mt-4 font-display text-[clamp(2.4rem,5vw,4rem)] leading-[0.95] tracking-tight" style={{ "--d": 100 } as Vars}>
               No black box. <em className="italic text-signal">Four rules.</em>
             </h2>
@@ -454,7 +525,7 @@ export default function Home() {
             ))}
           </div>
           <div>
-            <p data-reveal="up" className="font-mono text-xs uppercase tracking-[0.2em] text-paper/50">Start narrow</p>
+            <p data-reveal="up" className="font-mono text-xs uppercase tracking-[0.2em] text-paper/50" data-scramble>Start narrow</p>
             <h2 data-reveal="up" className="mt-4 font-display text-[clamp(2.4rem,5vw,4rem)] leading-[0.95] tracking-tight" style={{ "--d": 100 } as Vars}>
               Kazakhstan first. <em className="italic text-signal">Then the region.</em>
             </h2>
@@ -478,10 +549,10 @@ export default function Home() {
               The right match beats a hundred cold messages.
             </h2>
             <div className="mt-10 flex flex-wrap justify-center gap-3">
-              <TrackedLink cta="footer_founder" href="/signup?role=founder" className="rounded-full bg-ink px-7 py-4 text-lg font-medium text-paper transition hover:bg-paper hover:text-ink">
+              <TrackedLink data-magnetic cta="footer_founder" href="/signup?role=founder" className="rounded-full bg-ink px-7 py-4 text-lg font-medium text-paper transition hover:bg-paper hover:text-ink">
                 I&apos;m a founder →
               </TrackedLink>
-              <TrackedLink cta="footer_investor" href="/signup?role=investor" className="rounded-full border-2 border-white px-7 py-4 text-lg font-medium transition hover:bg-white hover:text-signal">
+              <TrackedLink data-magnetic cta="footer_investor" href="/signup?role=investor" className="rounded-full border-2 border-white px-7 py-4 text-lg font-medium transition hover:bg-white hover:text-signal">
                 I&apos;m an investor →
               </TrackedLink>
             </div>
