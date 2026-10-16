@@ -6,6 +6,19 @@ const AUTH_PAGES = ["/login", "/signup"];
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
+  const path = request.nextUrl.pathname;
+
+  // Anonymous visitor (no Supabase auth cookie): nothing to refresh, skip the network call.
+  const hasSession = request.cookies.getAll().some((c) => c.name.startsWith("sb-") && c.name.includes("-auth-token"));
+  if (!hasSession) {
+    if (PROTECTED_PREFIXES.some((p) => path.startsWith(p))) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      url.search = `?next=${encodeURIComponent(path)}`;
+      return NextResponse.redirect(url);
+    }
+    return response;
+  }
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -30,8 +43,6 @@ export async function updateSession(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  const path = request.nextUrl.pathname;
 
   if (!user && PROTECTED_PREFIXES.some((p) => path.startsWith(p))) {
     const url = request.nextUrl.clone();

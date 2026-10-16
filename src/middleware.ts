@@ -6,5 +6,16 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+  // Only routes that need the session; the landing page and static files skip middleware.
+  matcher: [
+    "/dashboard/:path*",
+    "/onboarding/:path*",
+    "/discover/:path*",
+    "/saved/:path*",
+    "/matches/:path*",
+    "/insights/:path*",
+    "/login",
+    "/signup",
+    "/auth/:path*",
+  ],
 };

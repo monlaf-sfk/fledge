@@ -22,16 +22,16 @@ export const requireSession = cache(async (): Promise<Session> => {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("full_name, role, is_admin")
-    .eq("id", user.id)
-    .single();
+  // One round trip: profile and both possible own cards in parallel.
+  const [{ data: profile }, { data: startup }, { data: investor }] = await Promise.all([
+    supabase.from("profiles").select("full_name, role, is_admin").eq("id", user.id).single(),
+    supabase.from("startups").select("id").eq("owner_id", user.id).maybeSingle(),
+    supabase.from("investor_profiles").select("id").eq("owner_id", user.id).maybeSingle(),
+  ]);
   if (!profile) redirect("/login?error=profile");
 
   const role = profile.role as Role;
-  const table = role === "founder" ? "startups" : "investor_profiles";
-  const { data: own } = await supabase.from(table).select("id").eq("owner_id", user.id).maybeSingle();
+  const own = role === "founder" ? startup : investor;
 
   return {
     supabase,
