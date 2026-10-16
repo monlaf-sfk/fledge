@@ -11,7 +11,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <header className="sticky top-0 z-40 border-b border-line bg-paper/85 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4">
           <Logo />
-          {ownCardId && <NavLinks isAdmin={isAdmin} />}
+          {(ownCardId || isAdmin) && <NavLinks isAdmin={isAdmin} />}
           <div className="flex items-center gap-3">
             <span
               className={`hidden rounded-full px-3 py-1 font-mono text-[11px] uppercase tracking-[0.16em] sm:inline ${
@@ -28,7 +28,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             </form>
           </div>
         </div>
-        {ownCardId && (
+        {(ownCardId || isAdmin) && (
           <div className="border-t border-line md:hidden">
             <NavLinks mobile isAdmin={isAdmin} />
           </div>

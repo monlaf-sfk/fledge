@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { requireOnboarded } from "@/lib/session";
+import { redirect } from "next/navigation";
+import { requireOnboarded, requireSession } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Dashboard · Fledge" };
 
 export default async function DashboardPage() {
+  // Team admin accounts without a marketplace profile land on analytics.
+  const session = await requireSession();
+  if (session.isAdmin && !session.ownCardId) redirect("/insights");
+
   const { supabase, userId, role, fullName } = await requireOnboarded();
 
   const [{ data: swipes }, { count: matchCount }] = await Promise.all([

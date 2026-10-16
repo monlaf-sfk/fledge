@@ -15,7 +15,7 @@ import {
   type Column,
   type DayPoint,
 } from "@/components/charts";
-import { requireOnboarded } from "@/lib/session";
+import { requireSession } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Insights · Fledge" };
 export const dynamic = "force-dynamic";
@@ -73,7 +73,7 @@ function Kpi({ label, value, detail, meaning }: { label: string; value: string; 
 }
 
 export default async function InsightsPage() {
-  const { supabase, isAdmin } = await requireOnboarded();
+  const { supabase, isAdmin } = await requireSession();
   // Team-only page; the DB function also refuses non-admins.
   if (!isAdmin) notFound();
   const { data, error } = await supabase.rpc("analytics_overview");
