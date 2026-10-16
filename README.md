@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Fledge — landing page + auth
 
-## Getting Started
+Next.js 15 (App Router) + Tailwind 4 + Supabase Auth. Users sign up as **founder** or **investor**;
+the role is stored in `public.profiles` and cannot be changed by the client after sign-up.
 
-First, run the development server:
+## Run locally
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. Create a free project at <https://supabase.com>.
+2. In Supabase → **SQL Editor**, run `supabase/migrations/0001_profiles.sql`.
+3. Copy env and fill in values from Supabase → Project Settings → API:
+   ```bash
+   cp .env.example .env.local
+   ```
+4. In Supabase → Authentication → URL Configuration, set **Site URL** to `http://localhost:3000`
+   and add `http://localhost:3000/auth/callback` (and the Vercel URL later) to **Redirect URLs**.
+5. Start:
+   ```bash
+   npm install
+   npm run dev
+   ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+For quick demos you can turn off **Confirm email** (Authentication → Providers → Email);
+then sign-up logs the user in immediately.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Routes
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Route | What it does |
+| --- | --- |
+| `/` | Landing page. CTAs go to `/signup?role=founder` or `/signup?role=investor` |
+| `/signup` | Role picker + name, email, password. Server-side validation |
+| `/login` | Email + password. Supports `?next=` (same-site paths only) |
+| `/auth/callback` | Email confirmation link → session |
+| `/dashboard` | Protected. Shows role-specific next steps (onboarding is the next sprint) |
 
-## Learn More
+## Where things live
 
-To learn more about Next.js, take a look at the following resources:
+- `src/app/auth/actions.ts` — `signUp`, `signIn`, `signOut` server actions
+- `src/lib/supabase/` — server client and session-refresh middleware
+- `src/middleware.ts` — protects `/dashboard`, sends logged-in users away from `/login`, `/signup`
+- `supabase/migrations/0001_profiles.sql` — `user_role` enum, `profiles` table, RLS, sign-up trigger
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+> The trigger rejects any new user without `role` = `founder`/`investor` in metadata.
+> So "Add user" in the Supabase dashboard or a future Google OAuth button fails with
+> `Invalid role: null` until that flow also passes a role.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deploy
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Push to GitHub → import in Vercel → add the three env vars → add the Vercel URL to Supabase
+Redirect URLs.
