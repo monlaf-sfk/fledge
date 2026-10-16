@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@/components/logo";
+import { PageView, TrackedLink } from "@/components/public-track";
 
 const steps = [
   { n: "01", title: "Build a structured profile", body: "Founders add stage, industry, traction range and raise. Investors add thesis, stages, geography and cheque size." },
@@ -61,6 +62,7 @@ function LockIcon() {
 export default function Home() {
   return (
     <main className="overflow-x-hidden">
+      <PageView name="landing_viewed" />
       {/* Nav */}
       <header className="mx-auto flex max-w-6xl items-center justify-between px-5 py-6">
         <Logo />
@@ -68,9 +70,9 @@ export default function Home() {
           <a href="#how" className="hidden px-3 py-2 text-ink-soft hover:text-ink sm:inline">How it works</a>
           <a href="#sides" className="hidden px-3 py-2 text-ink-soft hover:text-ink sm:inline">For whom</a>
           <Link href="/login" className="px-3 py-2 font-medium hover:text-signal">Log in</Link>
-          <Link href="/signup" className="rounded-full bg-ink px-4 py-2 font-medium text-paper transition hover:bg-signal">
+          <TrackedLink cta="nav_join" href="/signup" className="rounded-full bg-ink px-4 py-2 font-medium text-paper transition hover:bg-signal">
             Join Fledge
-          </Link>
+          </TrackedLink>
         </nav>
       </header>
 
@@ -90,8 +92,7 @@ export default function Home() {
             investors only startups inside their thesis. You connect when interest is mutual.
           </p>
           <div className="rise mt-10 flex flex-col gap-3 sm:flex-row" style={{ animationDelay: "360ms" }}>
-            <Link
-              href="/signup?role=founder"
+            <TrackedLink cta="hero_founder" href="/signup?role=founder"
               className="group inline-flex items-center justify-between gap-6 rounded-2xl bg-ink px-6 py-4 text-paper transition hover:bg-moss"
             >
               <span>
@@ -99,9 +100,8 @@ export default function Home() {
                 <span className="text-lg font-medium">Join as founder</span>
               </span>
               <span className="text-2xl transition group-hover:translate-x-1">→</span>
-            </Link>
-            <Link
-              href="/signup?role=investor"
+            </TrackedLink>
+            <TrackedLink cta="hero_investor" href="/signup?role=investor"
               className="group inline-flex items-center justify-between gap-6 rounded-2xl border-2 border-ink px-6 py-4 transition hover:border-signal hover:text-signal"
             >
               <span>
@@ -109,7 +109,7 @@ export default function Home() {
                 <span className="text-lg font-medium">Join as investor</span>
               </span>
               <span className="text-2xl transition group-hover:translate-x-1">→</span>
-            </Link>
+            </TrackedLink>
           </div>
         </div>
 
@@ -190,9 +190,9 @@ export default function Home() {
             <li>· Your identity and deck stay private until a match</li>
             <li>· See who saved or showed interest</li>
           </ul>
-          <Link href="/signup?role=founder" className="mt-10 inline-flex w-fit rounded-full bg-signal px-6 py-3 font-medium text-white transition hover:bg-paper hover:text-ink">
+          <TrackedLink cta="side_founder" href="/signup?role=founder" className="mt-10 inline-flex w-fit rounded-full bg-signal px-6 py-3 font-medium text-white transition hover:bg-paper hover:text-ink">
             Create startup profile →
-          </Link>
+          </TrackedLink>
         </article>
         <article className="flex flex-col rounded-[28px] border-2 border-ink p-9">
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink-soft">For investors</p>
@@ -202,9 +202,9 @@ export default function Home() {
             <li>· Coming next: AI assistant for key metrics, strengths &amp; risks, comparables</li>
             <li>· Only founders who want to talk to you reach out</li>
           </ul>
-          <Link href="/signup?role=investor" className="mt-10 inline-flex w-fit rounded-full bg-ink px-6 py-3 font-medium text-paper transition hover:bg-signal">
+          <TrackedLink cta="side_investor" href="/signup?role=investor" className="mt-10 inline-flex w-fit rounded-full bg-ink px-6 py-3 font-medium text-paper transition hover:bg-signal">
             Set investment thesis →
-          </Link>
+          </TrackedLink>
         </article>
       </section>
 
@@ -215,8 +215,8 @@ export default function Home() {
             The right match beats a hundred cold messages.
           </h2>
           <div className="mt-10 flex flex-wrap gap-3">
-            <Link href="/signup?role=founder" className="rounded-full bg-ink px-6 py-3 font-medium text-paper transition hover:bg-paper hover:text-ink">I&apos;m a founder</Link>
-            <Link href="/signup?role=investor" className="rounded-full border-2 border-white px-6 py-3 font-medium transition hover:bg-white hover:text-signal">I&apos;m an investor</Link>
+            <TrackedLink cta="footer_founder" href="/signup?role=founder" className="rounded-full bg-ink px-6 py-3 font-medium text-paper transition hover:bg-paper hover:text-ink">I&apos;m a founder</TrackedLink>
+            <TrackedLink cta="footer_investor" href="/signup?role=investor" className="rounded-full border-2 border-white px-6 py-3 font-medium transition hover:bg-white hover:text-signal">I&apos;m an investor</TrackedLink>
           </div>
           <svg className="pointer-events-none absolute -bottom-10 -right-10 h-64 w-64 opacity-20" viewBox="0 0 32 32" aria-hidden>
             <path d="M4 22c6-1 10-6 12-14 2 8 6 13 12 14-6 2-9 4-12 6-3-2-6-4-12-6z" fill="white" />

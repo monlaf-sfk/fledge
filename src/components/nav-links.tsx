@@ -7,11 +7,11 @@ const LINKS = [
   { href: "/discover", label: "Discover" },
   { href: "/saved", label: "Saved" },
   { href: "/matches", label: "Matches" },
-  { href: "/insights", label: "Insights" },
 ];
 
-export function NavLinks({ mobile = false }: { mobile?: boolean }) {
+export function NavLinks({ mobile = false, isAdmin = false }: { mobile?: boolean; isAdmin?: boolean }) {
   const path = usePathname();
+  const links = isAdmin ? [...LINKS, { href: "/insights", label: "Insights" }] : LINKS;
 
   return (
     <nav
@@ -21,7 +21,7 @@ export function NavLinks({ mobile = false }: { mobile?: boolean }) {
           : "hidden items-center gap-1 text-sm md:flex"
       }
     >
-      {LINKS.map((l) => {
+      {links.map((l) => {
         const active = path.startsWith(l.href);
         return (
           <Link

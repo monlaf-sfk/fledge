@@ -4,14 +4,14 @@ import { signOut } from "@/app/auth/actions";
 import { requireSession } from "@/lib/session";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const { role, fullName, ownCardId } = await requireSession();
+  const { role, fullName, ownCardId, isAdmin } = await requireSession();
 
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-40 border-b border-line bg-paper/85 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4">
           <Logo />
-          {ownCardId && <NavLinks />}
+          {ownCardId && <NavLinks isAdmin={isAdmin} />}
           <div className="flex items-center gap-3">
             <span
               className={`hidden rounded-full px-3 py-1 font-mono text-[11px] uppercase tracking-[0.16em] sm:inline ${
@@ -30,7 +30,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </div>
         {ownCardId && (
           <div className="border-t border-line md:hidden">
-            <NavLinks mobile />
+            <NavLinks mobile isAdmin={isAdmin} />
           </div>
         )}
       </header>

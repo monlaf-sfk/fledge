@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { signUp, type AuthState, type Role } from "@/app/auth/actions";
 import { Field, FormAlert } from "@/components/auth-shell";
+import { anonId } from "@/components/public-track";
 
 const roles: { value: Role; title: string; hint: string }[] = [
   { value: "founder", title: "Founder", hint: "I'm raising for my startup" },
@@ -13,6 +14,8 @@ const roles: { value: Role; title: string; hint: string }[] = [
 export function SignupForm({ initialRole }: { initialRole?: Role }) {
   const [state, action, pending] = useActionState<AuthState, FormData>(signUp, {});
   const [role, setRole] = useState<Role | undefined>(state.fields?.role ?? initialRole);
+  const [visitorId, setVisitorId] = useState("");
+  useEffect(() => setVisitorId(anonId()), []);
 
   if (state.message) {
     return (
@@ -27,6 +30,7 @@ export function SignupForm({ initialRole }: { initialRole?: Role }) {
 
   return (
     <form action={action} className="space-y-5" noValidate>
+      <input type="hidden" name="anon_id" value={visitorId} />
       <fieldset>
         <legend className="font-mono text-[11px] uppercase tracking-[0.16em] text-ink-soft">I join as</legend>
         <div className="mt-2 grid grid-cols-2 gap-3">

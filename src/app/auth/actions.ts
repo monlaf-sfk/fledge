@@ -50,7 +50,13 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
     return { message: `Check ${email} — we sent a confirmation link.`, fields };
   }
 
-  if (data.user) await track(supabase, data.user.id, "signup_completed", { role });
+  const anon = String(formData.get("anon_id") ?? "");
+  if (data.user) {
+    await track(supabase, data.user.id, "signup_completed", {
+      role,
+      ...(/^[a-zA-Z0-9-]{8,64}$/.test(anon) ? { anon_id: anon } : {}),
+    });
+  }
   redirect("/onboarding");
 }
 

@@ -9,6 +9,7 @@ export type Session = {
   email: string;
   fullName: string;
   role: Role;
+  isAdmin: boolean;
   // id of the user's own startup (founder) or investor profile (investor); null until onboarding
   ownCardId: string | null;
 };
@@ -23,7 +24,7 @@ export const requireSession = cache(async (): Promise<Session> => {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, role")
+    .select("full_name, role, is_admin")
     .eq("id", user.id)
     .single();
   if (!profile) redirect("/login?error=profile");
@@ -38,6 +39,7 @@ export const requireSession = cache(async (): Promise<Session> => {
     email: user.email ?? "",
     fullName: profile.full_name,
     role,
+    isAdmin: Boolean(profile.is_admin),
     ownCardId: own?.id ?? null,
   };
 });

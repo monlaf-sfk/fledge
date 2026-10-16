@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AuthShell } from "@/components/auth-shell";
+import { PageView } from "@/components/public-track";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = { title: "Log in · Fledge" };
@@ -35,6 +36,7 @@ export default async function LoginPage({
         </div>
       }
     >
+      <PageView name="login_viewed" />
       <LoginForm next={next} linkError={error === "link"} />
     </AuthShell>
   );

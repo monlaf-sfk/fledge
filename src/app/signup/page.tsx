@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AuthShell } from "@/components/auth-shell";
+import { PageView } from "@/components/public-track";
 import { SignupForm } from "./signup-form";
 
 export const metadata: Metadata = { title: "Join Fledge" };
@@ -31,6 +32,7 @@ export default async function SignupPage({
         </blockquote>
       }
     >
+      <PageView name="signup_viewed" props={{ role: initialRole ?? "none" }} />
       <SignupForm initialRole={initialRole} />
     </AuthShell>
   );

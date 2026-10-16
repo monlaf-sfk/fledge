@@ -37,7 +37,7 @@ then sign-up logs the user in immediately.
 | `/discover` | Ranked feed with Pass / Save / Interested (keys ← ↓ →). Match pop-up on mutual interest |
 | `/saved` | Saved profiles, can still press Pass or Interested |
 | `/matches`, `/matches/[id]` | Matches list, unlocked details, chat (polls every 5 s) |
-| `/insights` | Live funnel from the database (demo matches excluded) and own action counts |
+| `/insights` | Team-only analytics dashboard (admins). Grant access: `update profiles set is_admin = true where email = '…';` in Supabase SQL Editor |
 
 ## Where things live
 
