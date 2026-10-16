@@ -1,5 +1,7 @@
 # Fledge — landing page + auth
 
+Live: <https://fledge-theta.vercel.app> · every push to `main` deploys automatically.
+
 Next.js 15 (App Router) + Tailwind 4 + Supabase Auth. Users sign up as **founder** or **investor**;
 the role is stored in `public.profiles` and cannot be changed by the client after sign-up.
 
