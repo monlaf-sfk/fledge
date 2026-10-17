@@ -30,7 +30,7 @@ function cleanUrl(v: string) {
 }
 
 export async function saveFounder(_prev: OnboardingState, f: FormData): Promise<OnboardingState> {
-  const { supabase, userId, role, ownCardId, fullName } = await requireSession();
+  const { supabase, userId, role, ownCardId, fullName, email } = await requireSession();
   if (role !== "founder") return { error: "Only founders can create a startup profile." };
 
   const card = {
@@ -44,7 +44,8 @@ export async function saveFounder(_prev: OnboardingState, f: FormData): Promise<
     traction_range: str(f, "traction_range"),
     funding_target_usd: int(f, "funding_target_usd"),
     team_size: int(f, "team_size"),
-    looking_for: manyOf(INVESTOR_TYPES, f, "looking_for"),
+    // Not chosen in the quick wizard = open to every investor type.
+    looking_for: manyOf(INVESTOR_TYPES, f, "looking_for").length ? manyOf(INVESTOR_TYPES, f, "looking_for") : [...INVESTOR_TYPES],
     updated_at: new Date().toISOString(),
   };
 
@@ -75,7 +76,7 @@ export async function saveFounder(_prev: OnboardingState, f: FormData): Promise<
     founder_name: fullName,
     founder_bio: str(f, "founder_bio").slice(0, 600),
     linkedin_url: linkedin,
-    contact_email: str(f, "contact_email").slice(0, 200),
+    contact_email: (str(f, "contact_email") || email).slice(0, 200),
     deck_url: deck,
     detailed_metrics: str(f, "detailed_metrics").slice(0, 600),
   });
@@ -86,7 +87,7 @@ export async function saveFounder(_prev: OnboardingState, f: FormData): Promise<
 }
 
 export async function saveInvestor(_prev: OnboardingState, f: FormData): Promise<OnboardingState> {
-  const { supabase, userId, role, ownCardId } = await requireSession();
+  const { supabase, userId, role, ownCardId, email } = await requireSession();
   if (role !== "investor") return { error: "Only investors can create an investment profile." };
 
   const card = {
@@ -126,7 +127,7 @@ export async function saveInvestor(_prev: OnboardingState, f: FormData): Promise
 
   const { error: privErr } = await supabase.from("investor_private").upsert({
     investor_id: saved.id,
-    contact_email: str(f, "contact_email").slice(0, 200),
+    contact_email: (str(f, "contact_email") || email).slice(0, 200),
     linkedin_url: linkedin,
     website_url: website,
   });
@@ -134,4 +135,15 @@ export async function saveInvestor(_prev: OnboardingState, f: FormData): Promise
 
   if (!ownCardId) await track(supabase, userId, "profile_completed", { role });
   redirect(ownCardId ? "/dashboard" : "/discover");
+}
+
+// Funnel inside onboarding: which wizard step people reach. Fire-and-forget from the client.
+export async function trackOnboardingStep(step: number, total: number) {
+  const { supabase, userId, role, ownCardId } = await requireSession();
+  if (ownCardId) return;
+  await track(supabase, userId, "onboarding_step", {
+    role,
+    step: Math.max(1, Math.min(10, Math.round(step) || 1)),
+    total: Math.max(1, Math.min(10, Math.round(total) || 1)),
+  });
 }

@@ -16,17 +16,27 @@ import {
 } from "@/lib/catalog";
 import { requireSession } from "@/lib/session";
 import { saveFounder, saveInvestor } from "./actions";
+import { OnboardingWizard } from "./wizard";
 
 export const metadata: Metadata = { title: "Your profile · Fledge" };
 
 export default async function OnboardingPage() {
-  const { supabase, role, ownCardId, email } = await requireSession();
+  const { supabase, role, ownCardId, email, fullName } = await requireSession();
   const editing = Boolean(ownCardId);
+
+  // New users get the 4-step wizard; the full form below is for editing and optional details.
+  if (!editing) {
+    return (
+      <main className="mx-auto max-w-6xl px-5 pb-24 pt-10">
+        <OnboardingWizard role={role} firstName={fullName.split(" ")[0]} />
+      </main>
+    );
+  }
 
   return (
     <main className="mx-auto max-w-3xl px-5 pb-24 pt-10">
       <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink-soft">
-        {editing ? "Edit profile" : "Step 1 of 2 · Profile"}
+        Edit profile
       </p>
       <h1 className="mt-4 font-display text-[clamp(2.4rem,6vw,4rem)] leading-[0.95] tracking-tight">
         {role === "founder" ? (

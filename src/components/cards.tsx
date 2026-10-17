@@ -71,9 +71,9 @@ export function StartupCardView({ s, fit, locked = true }: { s: StartupCard; fit
         {[
           ["Industry", s.industry],
           ["Geography", s.geography],
-          ["Raising", usd(s.funding_target_usd)],
+          ["Raising", s.funding_target_usd ? usd(s.funding_target_usd) : "—"],
           ["Traction", s.traction_range],
-          ["Team", `${s.team_size} people`],
+          ["Team", !s.team_size ? "—" : s.team_size === 1 ? "Solo founder" : `${s.team_size} people`],
           ["Wants", s.looking_for.map((t) => INVESTOR_TYPE_LABEL[t]).join(", ") || "—"],
         ].map(([k, v]) => (
           <div key={k} className="rounded-xl bg-paper px-3 py-2">
@@ -102,7 +102,7 @@ export function InvestorCardView({ i, fit, locked = true }: { i: InvestorCard; f
       <p className="mt-3 text-paper/75">{i.thesis}</p>
       <dl className="mt-6 grid grid-cols-2 gap-2.5 text-sm">
         {[
-          ["Ticket", `${usd(i.ticket_min_usd)}–${usd(i.ticket_max_usd)}`],
+          ["Ticket", i.ticket_min_usd ? `${usd(i.ticket_min_usd)}–${usd(i.ticket_max_usd)}` : "—"],
           ["Stages", i.stages.map((s) => STAGE_LABEL[s]).join(", ")],
           ["Sectors", i.industries.join(", ")],
           ["Geography", i.geographies.join(", ")],

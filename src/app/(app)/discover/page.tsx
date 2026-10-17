@@ -25,6 +25,13 @@ export default async function DiscoverPage() {
           <li><b className="text-ink">Save</b> — maybe later, keep it in Saved.</li>
           <li><b className="text-ink">Interested</b> — want to connect.</li>
         </ul>
+        <a
+          href="/onboarding"
+          className="mt-8 block max-w-sm rounded-2xl border border-dashed border-signal/50 bg-signal/5 p-4 text-sm transition hover:bg-signal/10"
+        >
+          <b>Add contacts{session.role === "founder" ? ", deck and metrics" : " and LinkedIn"}</b>
+          <span className="block text-ink-soft">Shown only after a match — makes the first call easier. Optional →</span>
+        </a>
       </aside>
       <section>
         <Deck items={items} />

@@ -76,7 +76,17 @@ export default async function InsightsPage() {
   const { supabase, isAdmin } = await requireSession();
   // Team-only page; the DB function also refuses non-admins.
   if (!isAdmin) notFound();
-  const { data, error } = await supabase.rpc("analytics_overview");
+  const [{ data, error }, { data: onb }] = await Promise.all([
+    supabase.rpc("analytics_overview"),
+    supabase.rpc("onboarding_steps"),
+  ]);
+  const onbRows = (onb ?? []) as { role: string; step: number; users: number }[];
+  const onbSteps = (role: string, labels: string[]) =>
+    labels.map((label, i) => ({
+      label,
+      hint: `step ${i + 1}`,
+      value: Number(onbRows.find((r) => r.role === role && r.step === i + 1)?.users ?? 0),
+    }));
 
   if (error || !data) {
     return (
@@ -224,6 +234,15 @@ export default async function InsightsPage() {
             head={["Step", "Browsers", "From previous"]}
             rows={acquisition.map((s, i) => [s.label, s.value, i ? fmtPct(pct(s.value, acquisition[i - 1].value)) : "—"])}
           />
+        </Card>
+      </div>
+
+      <div className="grid gap-8 lg:grid-cols-2">
+        <Card title="Onboarding wizard · founders" question="Which of the 4 questions makes founders quit? Users who reached each step.">
+          <Funnel steps={onbSteps("founder", ["Name & pitch", "Industry", "Stage, traction, team", "Raise & geography"])} />
+        </Card>
+        <Card title="Onboarding wizard · investors" question="Same for investors.">
+          <Funnel steps={onbSteps("investor", ["Name & type", "Industries", "Stages & geography", "Cheque size"])} />
         </Card>
       </div>
 

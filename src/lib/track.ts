@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 export type EventName =
   | "signup_completed"
   | "profile_completed"
+  | "onboarding_step"
   | "card_viewed"
   | "card_action"
   | "message_sent";
