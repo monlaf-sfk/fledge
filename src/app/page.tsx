@@ -5,6 +5,7 @@
 import Link from "next/link";
 import { Constellation } from "@/components/landing/constellation";
 import { LandingMotion } from "@/components/landing/motion";
+import { StickyCta } from "@/components/landing/sticky-cta";
 import { SwipeDemo } from "@/components/landing/swipe-demo";
 import { Logo } from "@/components/logo";
 import { PageView, TrackedLink } from "@/components/public-track";
@@ -27,6 +28,14 @@ const COMPARE: { row: string; li: boolean | string; cb: boolean | string; fl: bo
   { row: "Contact inside the product", li: "capped", cb: false, fl: true },
   { row: "Only mutual interest, no cold messages", li: false, cb: false, fl: true },
   { row: "Free for the core flow", li: "partly", cb: "partly", fl: true },
+];
+
+const FAQ = [
+  { q: "Is Fledge free?", a: "Yes. Everything in the beta is free: profile, ranked feed, matches and chat. Later, paid tools will add productivity features — never a higher ranking." },
+  { q: "Who can see my startup's details?", a: "Every signed-in user sees the card: pitch, stage, sector, geography and raise. Your name, LinkedIn, deck, metrics and contacts open only to an investor you matched with." },
+  { q: "How is the fit score calculated?", a: "Four public rules: industry match (35), stage match (30), geography covered (20) and a cheque that fits the raise (15). No hidden signals and no paid boosts." },
+  { q: "Are the investors on Fledge real?", a: "Fledge is an MVP. Real founders and investors are joining now; profiles marked DEMO are examples so you can try the flow. Demo matches are never counted as real ones." },
+  { q: "Can I use it outside Kazakhstan?", a: "Yes, but we start with Kazakhstan and Central Asia, where we know the ecosystem. You can choose CIS or Global as your geography." },
 ];
 
 const RAIL = [
@@ -113,6 +122,7 @@ export default function Home() {
     <main className="overflow-x-clip">
       <PageView name="landing_viewed" />
       <LandingMotion />
+      <StickyCta />
 
       {/* ======================================================= HERO (dark, layered) */}
       <section data-spotlight className="relative isolate min-h-[100svh] overflow-hidden bg-ink text-paper">
@@ -149,7 +159,7 @@ export default function Home() {
             <a href="#why" className="hidden px-3 py-2 text-paper/60 hover:text-paper sm:inline">Why Fledge</a>
             <Link href="/login" className="px-2 py-2 font-medium hover:text-signal sm:px-3">Log in</Link>
             <TrackedLink data-magnetic cta="nav_join" href="/signup" className="rounded-full bg-paper px-3 py-2 font-medium text-ink sm:px-4 transition hover:bg-signal hover:text-white">
-              Join Fledge
+              Join free
             </TrackedLink>
           </nav>
         </header>
@@ -187,6 +197,14 @@ export default function Home() {
                 <span className="text-2xl transition group-hover:translate-x-1">→</span>
               </TrackedLink>
             </div>
+            <ul className="rise mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm text-paper/60" style={{ animationDelay: "1000ms" }}>
+              {["Free during beta", "1-minute setup", "Identity hidden until a match"].map((t) => (
+                <li key={t} className="flex items-center gap-2">
+                  <span className="grid h-4 w-4 place-items-center rounded-full bg-signal/25 text-[10px] text-signal">✓</span>
+                  {t}
+                </li>
+              ))}
+            </ul>
           </div>
           <div className="rise" style={{ animationDelay: "400ms" }}>
             <div className="float-y">
@@ -211,6 +229,26 @@ export default function Home() {
           ))}
         </div>
       </div>
+
+      {/* ======================================================= PROOF STRIP */}
+      <section className="border-b border-line">
+        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-px bg-line md:grid-cols-4">
+          {[
+            { v: 6, s: "", label: "founder interviews behind the product" },
+            { v: 4, s: "", label: "transparent rules rank every card" },
+            { v: 0, s: "", label: "cold messages — contact only after a match" },
+            { v: 1, s: " min", label: "to create your profile" },
+          ].map((x, i) => (
+            <div key={x.label} data-reveal="up" className="bg-paper px-6 py-8" style={{ "--d": i * 100 } as Vars}>
+              <p className="font-display text-5xl leading-none">
+                <span data-count={x.v}>{x.v}</span>
+                {x.s}
+              </p>
+              <p className="mt-3 text-sm text-ink-soft">{x.label}</p>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* ======================================================= PROBLEM: word lighting */}
       <section id="problem" data-scrub className="mx-auto max-w-5xl px-5 py-32">
@@ -297,7 +335,7 @@ export default function Home() {
       </section>
 
       {/* ======================================================= PINNED STORY */}
-      <section id="how" data-scrub="pin" data-steps="4" className="relative h-[380vh]">
+      <section id="how" data-scrub="pin" data-steps="4" className="relative h-[260vh]">
         <div className="sticky top-0 flex h-[100svh] items-center overflow-hidden">
           <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-5 md:grid-cols-2">
             <div>
@@ -391,7 +429,7 @@ export default function Home() {
       </section>
 
       {/* ======================================================= HORIZONTAL RAIL */}
-      <section data-scrub="pin" data-rail className="relative h-[300vh] bg-ink text-paper">
+      <section data-scrub="pin" data-rail className="relative h-[210vh] bg-ink text-paper">
         <div className="sticky top-0 flex h-[100svh] flex-col justify-center overflow-hidden">
           <div className="mx-auto w-full max-w-6xl px-5">
             <p className="font-mono text-xs uppercase tracking-[0.2em] text-paper/50" data-scramble>Inside the feed</p>
@@ -469,6 +507,55 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ======================================================= BENEFITS BY ROLE */}
+      <section className="mx-auto grid max-w-6xl gap-6 px-5 py-28 md:grid-cols-2">
+        {[
+          {
+            who: "For founders",
+            title: "Investors who fit — not just investor names.",
+            points: ["Feed ranked by stage, sector, geography and cheque", "Your identity and deck stay private until a match", "No more guessing who is still active"],
+            cta: "Create startup profile",
+            href: "/signup?role=founder",
+            id: "benefit_founder",
+            dark: true,
+          },
+          {
+            who: "For investors",
+            title: "Deal flow filtered by your thesis.",
+            points: ["Structured cards you can screen in seconds", "Only founders who want to talk to you reach out", "Thesis written for you from a few taps"],
+            cta: "Set investment thesis",
+            href: "/signup?role=investor",
+            id: "benefit_investor",
+            dark: false,
+          },
+        ].map((b, i) => (
+          <article
+            key={b.who}
+            data-reveal={i ? "right" : "left"}
+            className={`flex flex-col rounded-[28px] p-9 ${b.dark ? "bg-ink text-paper" : "border-2 border-ink"}`}
+          >
+            <p className={`font-mono text-xs uppercase tracking-[0.2em] ${b.dark ? "text-paper/50" : "text-ink-soft"}`}>{b.who}</p>
+            <h3 className="mt-6 font-display text-4xl leading-tight">{b.title}</h3>
+            <ul className={`mt-8 space-y-3 ${b.dark ? "text-paper/80" : "text-ink-soft"}`}>
+              {b.points.map((pt) => (
+                <li key={pt} className="flex gap-3">
+                  <span className="text-signal">✓</span>
+                  {pt}
+                </li>
+              ))}
+            </ul>
+            <TrackedLink
+              data-magnetic
+              cta={b.id}
+              href={b.href}
+              className={`mt-10 inline-flex w-fit rounded-full px-6 py-3 font-medium transition ${b.dark ? "bg-signal text-white hover:bg-paper hover:text-ink" : "bg-ink text-paper hover:bg-signal"}`}
+            >
+              {b.cta} →
+            </TrackedLink>
+          </article>
+        ))}
+      </section>
+
       {/* ======================================================= COMPARISON */}
       <section className="mx-auto max-w-5xl px-5 py-28">
         <h2 data-reveal="up" className="font-display text-[clamp(2.4rem,5vw,4rem)] leading-[0.95] tracking-tight">
@@ -539,8 +626,24 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ======================================================= FAQ */}
+      <section className="mx-auto max-w-3xl px-5 py-28">
+        <h2 data-reveal="up" className="font-display text-[clamp(2.4rem,5vw,4rem)] leading-[0.95] tracking-tight">Questions</h2>
+        <div className="mt-10 divide-y divide-line border-y border-line">
+          {FAQ.map((q) => (
+            <details key={q.q} className="group py-5">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-6 text-lg font-medium">
+                {q.q}
+                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-ink/20 transition group-open:rotate-45">+</span>
+              </summary>
+              <p className="mt-3 max-w-2xl text-ink-soft">{q.a}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+
       {/* ======================================================= IRIS CTA */}
-      <section data-scrub="pin" className="relative h-[220vh]">
+      <section data-scrub="pin" className="relative h-[160vh]">
         <div className="sticky top-0 grid h-[100svh] place-items-center overflow-hidden px-5">
           <div className="iris absolute inset-0 bg-signal" aria-hidden />
           {/* Text fades in once the circle covers it */}
@@ -561,7 +664,7 @@ export default function Home() {
       </section>
 
       <footer className="border-t border-line">
-        <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-4 px-5 py-8 text-sm text-ink-soft sm:flex-row sm:items-center">
+        <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-4 px-5 pb-28 pt-8 text-sm text-ink-soft sm:flex-row sm:items-center md:pb-8">
           <Logo />
           <p>Product Analytics · KBTU · 2026 — MVP prototype</p>
         </div>
