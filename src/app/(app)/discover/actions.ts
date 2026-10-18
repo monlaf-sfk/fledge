@@ -43,7 +43,7 @@ export async function swipe(targetId: string, action: SwipeAction, score: number
 
   // The DB trigger logs match_created in our events table; mirror new matches to PostHog.
   if (match && Date.now() - new Date(match.created_at).getTime() < 15_000) {
-    await captureServer(userId, "match_created", { match_id: match.id, is_demo: match.is_demo, role });
+    await captureServer(userId, "match_created", { match_id: match.id, is_demo: match.is_demo, role, $set: { role } });
   }
   return { matchId: match?.id };
 }

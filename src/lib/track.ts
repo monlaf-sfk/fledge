@@ -16,9 +16,15 @@ export async function track(
   name: EventName,
   props: Record<string, unknown> = {},
 ) {
+  // Person properties ride on every server event, so test-account filtering works even when
+  // the browser never sent an identify call (ad blockers, bots, server-only flows).
+  const { data: person } = await supabase.from("profiles").select("role, is_test").eq("id", userId).maybeSingle();
   const [{ error }] = await Promise.all([
     supabase.from("events").insert({ user_id: userId, name, props }),
-    captureServer(userId, name, props),
+    captureServer(userId, name, {
+      ...props,
+      ...(person ? { $set: { role: person.role, is_test: person.is_test } } : {}),
+    }),
   ]);
   if (error) console.error("track failed", name, error.message);
 }

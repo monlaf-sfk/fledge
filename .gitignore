@@ -44,3 +44,4 @@ next-env.d.ts
 .supabase-db-password
 supabase/.temp/
 .posthog-key
+.claude/
