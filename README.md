@@ -64,6 +64,14 @@ then sign-up logs the user in immediately.
   `card_action`, `match_created` (from the trigger), `message_sent`. `funnel_summary()` returns
   aggregate counts only.
 
+## PostHog (product analytics)
+
+Set `NEXT_PUBLIC_POSTHOG_KEY` (project key, `phc_…`) in Vercel. Without it, analytics is a no-op.
+Browser: pageviews, clicks, session replay (inputs masked), landing events. Server: the same events
+as the `events` table (`signup_completed`, `onboarding_step`, `profile_completed`, `card_viewed`,
+`card_action`, `match_created`, `message_sent`). Users are identified by id with `role` and
+`is_test`; filter `is_test = true` out of insights. Events go through `/ingest` (see `next.config.ts`).
+
 ## Migrations
 
 Apply new files in `supabase/migrations` **before** pushing code that uses them

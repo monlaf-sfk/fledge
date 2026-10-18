@@ -43,3 +43,4 @@ next-env.d.ts
 !.env.example
 .supabase-db-password
 supabase/.temp/
+.posthog-key

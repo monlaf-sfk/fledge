@@ -10,6 +10,7 @@ export type Session = {
   fullName: string;
   role: Role;
   isAdmin: boolean;
+  isTest: boolean;
   // id of the user's own startup (founder) or investor profile (investor); null until onboarding
   ownCardId: string | null;
 };
@@ -24,7 +25,7 @@ export const requireSession = cache(async (): Promise<Session> => {
 
   // One round trip: profile and both possible own cards in parallel.
   const [{ data: profile }, { data: startup }, { data: investor }] = await Promise.all([
-    supabase.from("profiles").select("full_name, role, is_admin").eq("id", user.id).single(),
+    supabase.from("profiles").select("full_name, role, is_admin, is_test").eq("id", user.id).single(),
     supabase.from("startups").select("id").eq("owner_id", user.id).maybeSingle(),
     supabase.from("investor_profiles").select("id").eq("owner_id", user.id).maybeSingle(),
   ]);
@@ -40,6 +41,7 @@ export const requireSession = cache(async (): Promise<Session> => {
     fullName: profile.full_name,
     role,
     isAdmin: Boolean(profile.is_admin),
+    isTest: Boolean(profile.is_test),
     ownCardId: own?.id ?? null,
   };
 });

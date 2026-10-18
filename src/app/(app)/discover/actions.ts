@@ -2,6 +2,7 @@
 
 import { requireOnboarded } from "@/lib/session";
 import { track } from "@/lib/track";
+import { captureServer } from "@/lib/analytics/server";
 
 export type SwipeAction = "pass" | "save" | "interested";
 export type SwipeResult = { matchId?: string; error?: string };
@@ -35,11 +36,15 @@ export async function swipe(targetId: string, action: SwipeAction, score: number
   const investorId = role === "founder" ? targetId : ownCardId!;
   const { data: match } = await supabase
     .from("matches")
-    .select("id")
+    .select("id, is_demo, created_at")
     .eq("startup_id", startupId)
     .eq("investor_id", investorId)
     .maybeSingle();
 
+  // The DB trigger logs match_created in our events table; mirror new matches to PostHog.
+  if (match && Date.now() - new Date(match.created_at).getTime() < 15_000) {
+    await captureServer(userId, "match_created", { match_id: match.id, is_demo: match.is_demo, role });
+  }
   return { matchId: match?.id };
 }
 

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect } from "react";
 import { trackPublic, type PublicEvent } from "@/app/track-actions";
+import { captureClient } from "@/components/analytics-provider";
 
 const KEY = "fledge_anon_id";
 let memoryId: string | null = null;
@@ -25,6 +26,7 @@ export function PageView({ name, props }: { name: PublicEvent; props?: Record<st
   const key = JSON.stringify(props ?? {});
   useEffect(() => {
     void trackPublic(name, anonId(), JSON.parse(key));
+    captureClient(name, JSON.parse(key));
   }, [name, key]);
   return null;
 }
@@ -38,6 +40,7 @@ export function TrackedLink({
       {...props}
       onClick={(e) => {
         void trackPublic("cta_clicked", anonId(), { cta });
+        captureClient("cta_clicked", { cta });
         props.onClick?.(e);
       }}
     />

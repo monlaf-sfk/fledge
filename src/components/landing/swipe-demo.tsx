@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { trackPublic } from "@/app/track-actions";
 import { anonId } from "@/components/public-track";
+import { captureClient } from "@/components/analytics-provider";
 
 // Playable demo on the landing page: drag a card right (Interested) or left (Pass).
 // Some demo investors "like you back" and fire a match with confetti.
@@ -79,6 +80,7 @@ export function SwipeDemo() {
       if (!card || leaving) return;
       setLeaving(dir);
       void trackPublic("cta_clicked", anonId(), { cta: dir === "right" ? "demo_interested" : "demo_pass", card: card.name });
+      captureClient("demo_swipe", { action: dir === "right" ? "interested" : "pass", card: card.name });
       setTimeout(() => {
         if (dir === "right") {
           setLikes((l) => l + 1);

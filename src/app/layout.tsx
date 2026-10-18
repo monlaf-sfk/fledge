@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Bricolage_Grotesque, Fraunces, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
+import { AnalyticsProvider } from "@/components/analytics-provider";
 
 const fraunces = Fraunces({
   variable: "--font-fraunces",
@@ -35,6 +36,7 @@ export default function RootLayout({
       <body
         className={`${fraunces.variable} ${bricolage.variable} ${plexMono.variable} grain antialiased`}
       >
+        <AnalyticsProvider />
         {children}
       </body>
     </html>

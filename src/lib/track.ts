@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { captureServer } from "@/lib/analytics/server";
 
 export type EventName =
   | "signup_completed"
@@ -15,6 +16,9 @@ export async function track(
   name: EventName,
   props: Record<string, unknown> = {},
 ) {
-  const { error } = await supabase.from("events").insert({ user_id: userId, name, props });
+  const [{ error }] = await Promise.all([
+    supabase.from("events").insert({ user_id: userId, name, props }),
+    captureServer(userId, name, props),
+  ]);
   if (error) console.error("track failed", name, error.message);
 }
