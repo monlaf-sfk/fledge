@@ -178,3 +178,8 @@ html:not(.motion-ready) .story-screen.s-0 { opacity: 1; transform: none; }
   [data-rail] > div { position: static; height: auto; padding-block: 6rem; }
   [data-rail] .rail-track { width: auto; flex-wrap: wrap; justify-content: center; }
 }
+
+/* Anchor jumps: smooth, and stop below the sticky header */
+html { scroll-behavior: smooth; }
+[id] { scroll-margin-top: 110px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }

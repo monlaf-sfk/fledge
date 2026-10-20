@@ -119,7 +119,7 @@ export default function Home() {
   const hits = new Set(hitList);
 
   return (
-    <main className="overflow-x-clip">
+    <main id="top" className="overflow-x-clip">
       <PageView name="landing_viewed" />
       <LandingMotion />
       <StickyCta />
@@ -156,7 +156,8 @@ export default function Home() {
           <Logo inverted />
           <nav className="flex items-center gap-1 whitespace-nowrap text-sm sm:gap-2">
             <a href="#how" className="hidden px-3 py-2 text-paper/60 hover:text-paper sm:inline">How it works</a>
-            <a href="#why" className="hidden px-3 py-2 text-paper/60 hover:text-paper sm:inline">Why Fledge</a>
+            <a href="#try" className="hidden px-3 py-2 text-paper/60 hover:text-paper sm:inline">Try it</a>
+            <a href="#faq" className="hidden px-3 py-2 text-paper/60 hover:text-paper lg:inline">FAQ</a>
             <Link href="/login" className="px-2 py-2 font-medium hover:text-signal sm:px-3">Log in</Link>
             <TrackedLink data-magnetic cta="nav_join" href="/signup" className="rounded-full bg-paper px-3 py-2 font-medium text-ink sm:px-4 transition hover:bg-signal hover:text-white">
               Join free
@@ -263,7 +264,7 @@ export default function Home() {
       </section>
 
       {/* ======================================================= INFOGRAPHIC: evidence */}
-      <section className="relative isolate overflow-hidden bg-ink py-28 text-paper">
+      <section id="evidence" className="relative isolate overflow-hidden bg-ink py-28 text-paper">
         <div aria-hidden className="glow -right-[10%] top-0 -z-10 h-[30vw] w-[30vw] bg-signal/25" />
         <div className="mx-auto max-w-6xl px-5">
           <p data-reveal="up" className="font-mono text-xs uppercase tracking-[0.2em] text-paper/50" data-scramble>What founders told us</p>
@@ -410,7 +411,7 @@ export default function Home() {
       </section>
 
       {/* ======================================================= TRY IT: playable swipe */}
-      <section className="relative isolate overflow-hidden bg-paper-deep/60 py-28">
+      <section id="try" className="relative isolate overflow-hidden bg-paper-deep/60 py-28">
         <div aria-hidden className="glow -left-[10%] top-[20%] -z-10 h-[28vw] w-[28vw] bg-signal/20" />
         <div className="mx-auto grid max-w-6xl items-center gap-14 px-5 md:grid-cols-[1fr_1.1fr]">
           <div>
@@ -508,7 +509,7 @@ export default function Home() {
       </section>
 
       {/* ======================================================= BENEFITS BY ROLE */}
-      <section className="mx-auto grid max-w-6xl gap-6 px-5 py-28 md:grid-cols-2">
+      <section id="benefits" className="mx-auto grid max-w-6xl gap-6 px-5 py-28 md:grid-cols-2">
         {[
           {
             who: "For founders",
@@ -557,7 +558,7 @@ export default function Home() {
       </section>
 
       {/* ======================================================= COMPARISON */}
-      <section className="mx-auto max-w-5xl px-5 py-28">
+      <section id="compare" className="mx-auto max-w-5xl px-5 py-28">
         <h2 data-reveal="up" className="font-display text-[clamp(2.4rem,5vw,4rem)] leading-[0.95] tracking-tight">
           One flow instead of <em className="italic text-ink-soft">two tools.</em>
         </h2>
@@ -589,7 +590,7 @@ export default function Home() {
       </section>
 
       {/* ======================================================= MARKET RINGS */}
-      <section className="bg-ink py-28 text-paper">
+      <section id="market" className="bg-ink py-28 text-paper">
         <div className="mx-auto grid max-w-6xl items-center gap-14 px-5 md:grid-cols-2">
           <div className="relative mx-auto aspect-square w-full max-w-[440px]" aria-hidden>
             {[
@@ -627,7 +628,7 @@ export default function Home() {
       </section>
 
       {/* ======================================================= FAQ */}
-      <section className="mx-auto max-w-3xl px-5 py-28">
+      <section id="faq" className="mx-auto max-w-3xl px-5 py-28">
         <h2 data-reveal="up" className="font-display text-[clamp(2.4rem,5vw,4rem)] leading-[0.95] tracking-tight">Questions</h2>
         <div className="mt-10 divide-y divide-line border-y border-line">
           {FAQ.map((q) => (
