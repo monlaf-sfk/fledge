@@ -21,25 +21,16 @@ import { saveFounder, saveInvestor, trackOnboardingStep, type OnboardingState } 
 // Quick onboarding: one small decision per screen, taps instead of typing, a live preview of
 // the card, and only the fields the fit score needs. Contacts, deck and metrics come later.
 
-const RAISES = [
-  { label: "< $50K", value: 50_000 },
-  { label: "$50–150K", value: 100_000 },
-  { label: "$150–500K", value: 300_000 },
-  { label: "$500K–1M", value: 750_000 },
-  { label: "$1M+", value: 1_500_000 },
-];
-const TEAMS = [
-  { label: "Solo", value: 1 },
-  { label: "2–3", value: 3 },
-  { label: "4–10", value: 7 },
-  { label: "10+", value: 15 },
-];
+// Quick picks only fill the exact amount fields; users can type any number.
+const RAISES = [50_000, 100_000, 300_000, 500_000, 1_000_000];
 const TICKETS = [
   { label: "$5–25K", min: 5_000, max: 25_000 },
   { label: "$25–100K", min: 25_000, max: 100_000 },
   { label: "$100–500K", min: 100_000, max: 500_000 },
   { label: "$500K–2M", min: 500_000, max: 2_000_000 },
 ];
+
+const money = (n: number) => (n >= 1_000_000 ? `$${+(n / 1_000_000).toFixed(1)}M` : `$${Math.round(n / 1000)}K`);
 
 type Founder = {
   name: string;
@@ -50,7 +41,8 @@ type Founder = {
   traction_range: string;
   team_size: number;
   funding_target_usd: number;
-  geography: string;
+  geography: string; // a listed geography or OTHER_INDUSTRY
+  geographyOther: string;
   looking_for: InvestorType[];
 };
 type Investor = {
@@ -61,16 +53,19 @@ type Investor = {
   industriesOther: string; // comma separated
   stages: Stage[];
   geographies: string[];
-  ticket: number; // index in TICKETS
+  geoOtherOn: boolean;
+  geographiesOther: string; // comma separated
+  ticketMin: number;
+  ticketMax: number;
   thesis: string;
 };
 
 const EMPTY_FOUNDER: Founder = {
   name: "", pitch: "", industry: "", industryOther: "", stage: "", traction_range: "", team_size: 0,
-  funding_target_usd: 0, geography: "", looking_for: [],
+  funding_target_usd: 0, geography: "", geographyOther: "", looking_for: [],
 };
 const EMPTY_INVESTOR: Investor = {
-  display_name: "", investor_type: "", industries: [], otherOn: false, industriesOther: "", stages: [], geographies: [], ticket: -1, thesis: "",
+  display_name: "", investor_type: "", industries: [], otherOn: false, industriesOther: "", stages: [], geographies: [], geoOtherOn: false, geographiesOther: "", ticketMin: 0, ticketMax: 0, thesis: "",
 };
 
 function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; children: React.ReactNode }) {
@@ -85,6 +80,56 @@ function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; chi
     >
       {children}
     </button>
+  );
+}
+
+// Dollar amount field: digits only, shown with thousands separators.
+function MoneyInput({ value, onChange, label }: { value: number; onChange: (n: number) => void; label: string }) {
+  return (
+    <label className="relative inline-flex items-center">
+      <span className="pointer-events-none absolute left-4 text-ink-soft">$</span>
+      <input
+        inputMode="numeric"
+        aria-label={label}
+        placeholder={label}
+        value={value ? value.toLocaleString("en-US") : ""}
+        onChange={(e) => {
+          const digits = e.target.value.replace(/[^0-9]/g, "").slice(0, 10);
+          onChange(digits ? Number(digits) : 0);
+        }}
+        className="h-12 w-40 rounded-2xl border-2 border-ink/15 bg-white/80 pl-8 pr-3 text-lg font-medium outline-none focus:border-ink"
+      />
+    </label>
+  );
+}
+
+// Exact team size: stepper with a number field and quick picks (usability feedback:
+// ranges like "4–10" stored a made-up number).
+function TeamSize({ value, onChange }: { value: number; onChange: (n: number) => void }) {
+  const set = (n: number) => onChange(Math.max(1, Math.min(500, Math.round(n) || 1)));
+  const btn = "grid h-12 w-12 place-items-center rounded-2xl border-2 border-ink/15 bg-white/70 text-xl font-medium transition hover:border-ink disabled:opacity-40";
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <button type="button" aria-label="Fewer people" className={btn} disabled={value <= 1} onClick={() => set((value || 1) - 1)}>−</button>
+      <input
+        type="number"
+        inputMode="numeric"
+        min={1}
+        max={500}
+        aria-label="Team size"
+        placeholder="0"
+        value={value || ""}
+        onChange={(e) => (e.target.value === "" ? onChange(0) : set(Number(e.target.value)))}
+        className="h-12 w-20 rounded-2xl border-2 border-ink/15 bg-white/80 text-center text-lg font-medium outline-none focus:border-ink [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
+      />
+      <button type="button" aria-label="More people" className={btn} disabled={value >= 500} onClick={() => set((value || 0) + 1)}>+</button>
+      <span className="mx-1 h-6 w-px bg-ink/15" aria-hidden />
+      {[1, 2, 3, 5, 10].map((n) => (
+        <Chip key={n} on={value === n} onClick={() => set(n)}>
+          {n === 1 ? "Solo" : n}
+        </Chip>
+      ))}
+    </div>
   );
 }
 
@@ -145,12 +190,17 @@ export function OnboardingWizard({ role, firstName }: { role: "founder" | "inves
     ...(inv.otherOn ? inv.industriesOther.split(",").map((t) => t.trim()).filter((t) => t.length >= 2) : []),
   ];
 
+  const allInvestorGeos = [
+    ...inv.geographies,
+    ...(inv.geoOtherOn ? inv.geographiesOther.split(",").map((t) => t.trim()).filter((t) => t.length >= 2) : []),
+  ];
+
   // Thesis is optional: if left empty we write one from the choices.
   const autoThesis = useMemo(() => {
     const type = inv.investor_type ? INVESTOR_TYPE_LABEL[inv.investor_type] : "Investor";
     const inds = allInvestorIndustries.slice(0, 3).join(", ") || "early-stage startups";
     const st = inv.stages.map((s) => STAGE_LABEL[s]).join("–");
-    const geo = inv.geographies.slice(0, 2).join(", ");
+    const geo = allInvestorGeos.slice(0, 2).join(", ");
     return `${type} investing in ${inds}${st ? ` at ${st}` : ""}${geo ? ` in ${geo}` : ""}.`;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inv]);
@@ -159,14 +209,14 @@ export function OnboardingWizard({ role, firstName }: { role: "founder" | "inves
     ? [
         { title: "What are you building?", ok: f.name.trim().length >= 2 && f.pitch.trim().length >= 10 },
         { title: "Which industry?", ok: f.industry === OTHER_INDUSTRY ? f.industryOther.trim().length >= 2 : Boolean(f.industry) },
-        { title: "Where are you now?", ok: Boolean(f.stage && f.traction_range && f.team_size) },
-        { title: "What are you raising?", ok: Boolean(f.funding_target_usd && f.geography) },
+        { title: "Where are you now?", ok: Boolean(f.stage && f.traction_range && f.team_size >= 1 && f.team_size <= 500) },
+        { title: "What are you raising?", ok: f.funding_target_usd > 0 && (f.geography === OTHER_INDUSTRY ? f.geographyOther.trim().length >= 2 : Boolean(f.geography)) },
       ]
     : [
         { title: "Who are you?", ok: inv.display_name.trim().length >= 2 && Boolean(inv.investor_type) },
         { title: "What do you invest in?", ok: inv.industries.length > 0 || (inv.otherOn && inv.industriesOther.trim().length >= 2) },
-        { title: "Which stage and where?", ok: inv.stages.length > 0 && inv.geographies.length > 0 },
-        { title: "Typical cheque?", ok: inv.ticket >= 0 },
+        { title: "Which stage and where?", ok: inv.stages.length > 0 && (inv.geographies.length > 0 || (inv.geoOtherOn && inv.geographiesOther.trim().length >= 2)) },
+        { title: "Typical cheque?", ok: inv.ticketMin > 0 && inv.ticketMax >= inv.ticketMin },
       ];
   const current = steps[step];
 
@@ -182,17 +232,18 @@ export function OnboardingWizard({ role, firstName }: { role: "founder" | "inves
       data.set("team_size", String(f.team_size));
       data.set("funding_target_usd", String(f.funding_target_usd));
       data.set("geography", f.geography);
+      if (f.geography === OTHER_INDUSTRY) data.set("geography_other", f.geographyOther.trim());
       f.looking_for.forEach((t) => data.append("looking_for", t));
     } else {
-      const t = TICKETS[inv.ticket];
       data.set("display_name", inv.display_name.trim());
       data.set("investor_type", inv.investor_type);
       inv.industries.forEach((x) => data.append("industries", x));
       if (inv.otherOn) data.set("industries_other", inv.industriesOther);
       inv.stages.forEach((x) => data.append("stages", x));
       inv.geographies.forEach((x) => data.append("geographies", x));
-      data.set("ticket_min_usd", String(t.min));
-      data.set("ticket_max_usd", String(t.max));
+      if (inv.geoOtherOn) data.set("geographies_other", inv.geographiesOther);
+      data.set("ticket_min_usd", String(inv.ticketMin));
+      data.set("ticket_max_usd", String(inv.ticketMax));
       data.set("thesis", inv.thesis.trim().length >= 10 ? inv.thesis.trim() : autoThesis);
     }
     startTransition(() => dispatch(data));
@@ -212,7 +263,7 @@ export function OnboardingWizard({ role, firstName }: { role: "founder" | "inves
         pitch: f.pitch || "Your one-line pitch appears here.",
         industry: (f.industry === OTHER_INDUSTRY ? f.industryOther.trim() : f.industry) || "—",
         stage: (f.stage || "seed") as Stage,
-        geography: f.geography || "—",
+        geography: (f.geography === OTHER_INDUSTRY ? f.geographyOther.trim() : f.geography) || "—",
         traction_range: f.traction_range || "—",
         funding_target_usd: f.funding_target_usd || 0,
         team_size: f.team_size,
@@ -228,9 +279,9 @@ export function OnboardingWizard({ role, firstName }: { role: "founder" | "inves
         thesis: inv.thesis.trim().length >= 10 ? inv.thesis : autoThesis,
         industries: allInvestorIndustries.length ? allInvestorIndustries : ["—"],
         stages: inv.stages.length ? inv.stages : (["seed"] as Stage[]),
-        geographies: inv.geographies.length ? inv.geographies : ["—"],
-        ticket_min_usd: inv.ticket >= 0 ? TICKETS[inv.ticket].min : 0,
-        ticket_max_usd: inv.ticket >= 0 ? TICKETS[inv.ticket].max : 0,
+        geographies: allInvestorGeos.length ? allInvestorGeos : ["—"],
+        ticket_min_usd: inv.ticketMin,
+        ticket_max_usd: Math.max(inv.ticketMin, inv.ticketMax),
       }}
     />
   );
@@ -314,19 +365,31 @@ export function OnboardingWizard({ role, firstName }: { role: "founder" | "inves
               <Group label="Traction">
                 {TRACTION_RANGES.map((x) => <Chip key={x} on={f.traction_range === x} onClick={() => setF((p) => ({ ...p, traction_range: x }))}>{x}</Chip>)}
               </Group>
-              <Group label="Team">
-                {TEAMS.map((x) => <Chip key={x.label} on={f.team_size === x.value} onClick={() => setF((p) => ({ ...p, team_size: x.value }))}>{x.label}</Chip>)}
+              <Group label="Team size" hint="people, including you">
+                <TeamSize value={f.team_size} onChange={(n) => setF((p) => ({ ...p, team_size: n }))} />
               </Group>
             </>
           )}
           {founder && step === 3 && (
             <>
-              <Group label="Raising">
-                {RAISES.map((x) => <Chip key={x.label} on={f.funding_target_usd === x.value} onClick={() => setF((p) => ({ ...p, funding_target_usd: x.value }))}>{x.label}</Chip>)}
+              <Group label="Raising" hint="total round, USD">
+                <MoneyInput value={f.funding_target_usd} onChange={(n) => setF((p) => ({ ...p, funding_target_usd: n }))} label="Round size" />
+                {RAISES.map((n) => <Chip key={n} on={f.funding_target_usd === n} onClick={() => setF((p) => ({ ...p, funding_target_usd: n }))}>{money(n)}</Chip>)}
               </Group>
               <Group label="Based in">
                 {GEOGRAPHIES.map((x) => <Chip key={x} on={f.geography === x} onClick={() => setF((p) => ({ ...p, geography: x }))}>{x}</Chip>)}
+                <Chip on={f.geography === OTHER_INDUSTRY} onClick={() => setF((p) => ({ ...p, geography: OTHER_INDUSTRY }))}>Other…</Chip>
               </Group>
+              {f.geography === OTHER_INDUSTRY && (
+                <input
+                  autoFocus
+                  className={`${inputCls} rise`}
+                  placeholder="Country or city, e.g. Tajikistan"
+                  value={f.geographyOther}
+                  maxLength={40}
+                  onChange={(e) => setF((p) => ({ ...p, geographyOther: e.target.value }))}
+                />
+              )}
               <Group label="Looking for" hint="optional, empty = all">
                 {INVESTOR_TYPES.map((x) => <Chip key={x} on={f.looking_for.includes(x)} onClick={() => setF((p) => ({ ...p, looking_for: toggle(p.looking_for, x) }))}>{INVESTOR_TYPE_LABEL[x]}</Chip>)}
               </Group>
@@ -368,14 +431,37 @@ export function OnboardingWizard({ role, firstName }: { role: "founder" | "inves
               </Group>
               <Group label="Geographies">
                 {GEOGRAPHIES.map((x) => <Chip key={x} on={inv.geographies.includes(x)} onClick={() => setInv((p) => ({ ...p, geographies: toggle(p.geographies, x) }))}>{x}</Chip>)}
+                <Chip on={inv.geoOtherOn} onClick={() => setInv((p) => ({ ...p, geoOtherOn: !p.geoOtherOn }))}>Other…</Chip>
               </Group>
+              {inv.geoOtherOn && (
+                <input
+                  autoFocus
+                  className={`${inputCls} rise`}
+                  placeholder="e.g. Tajikistan, Turkey (up to 3, comma separated)"
+                  value={inv.geographiesOther}
+                  maxLength={130}
+                  onChange={(e) => setInv((p) => ({ ...p, geographiesOther: e.target.value }))}
+                />
+              )}
             </>
           )}
           {!founder && step === 3 && (
             <>
-              <Group label="Cheque size">
-                {TICKETS.map((x, i) => <Chip key={x.label} on={inv.ticket === i} onClick={() => setInv((p) => ({ ...p, ticket: i }))}>{x.label}</Chip>)}
+              <Group label="Cheque size" hint="USD per startup">
+                <span className="flex items-center gap-2">
+                  <MoneyInput value={inv.ticketMin} onChange={(n) => setInv((p) => ({ ...p, ticketMin: n }))} label="From" />
+                  <span className="text-ink-soft">–</span>
+                  <MoneyInput value={inv.ticketMax} onChange={(n) => setInv((p) => ({ ...p, ticketMax: n }))} label="To" />
+                </span>
+                {TICKETS.map((x) => (
+                  <Chip key={x.label} on={inv.ticketMin === x.min && inv.ticketMax === x.max} onClick={() => setInv((p) => ({ ...p, ticketMin: x.min, ticketMax: x.max }))}>
+                    {x.label}
+                  </Chip>
+                ))}
               </Group>
+              {inv.ticketMin > 0 && inv.ticketMax > 0 && inv.ticketMax < inv.ticketMin && (
+                <p role="alert" className="text-sm text-[#a8320a]">“To” must be at least “From”.</p>
+              )}
               <div>
                 <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-ink-soft">Thesis · optional</p>
                 <textarea

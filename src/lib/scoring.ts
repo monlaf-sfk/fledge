@@ -9,7 +9,7 @@ const REGION_MEMBERS: Record<string, string[]> = {
 
 function geoCovers(investorGeo: string, startupGeo: string) {
   return (
-    investorGeo === startupGeo ||
+    investorGeo.toLowerCase() === startupGeo.toLowerCase() ||
     investorGeo === "Global" ||
     (REGION_MEMBERS[investorGeo]?.includes(startupGeo) ?? false)
   );

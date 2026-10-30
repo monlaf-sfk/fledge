@@ -13,18 +13,20 @@ export const INDUSTRIES = [
   "Agritech",
 ] as const;
 
-// "Other" lets users type an industry that is not in the list (usability test feedback, T2–T5).
+// "Other" lets users type a value that is not in a list (usability test feedback, T2–T5).
 export const OTHER_INDUSTRY = "Other";
+export const OTHER = OTHER_INDUSTRY;
 
-// Normalise a typed industry: trim, single spaces, 2–40 safe characters. null = invalid.
-export function cleanIndustry(raw: string) {
+// Normalise a typed label: trim, single spaces, 2–40 safe characters. If it equals a listed
+// value (any case), return the listed spelling. null = invalid.
+function cleanTyped(raw: string, list: readonly string[]) {
   const v = raw.replace(/\s+/g, " ").trim();
   if (v.length < 2 || v.length > 40) return null;
   if (!/^[\p{L}\p{N} &/+.,'()-]+$/u.test(v)) return null;
-  const known = INDUSTRIES.find((i) => i.toLowerCase() === v.toLowerCase());
-  return known ?? v;
+  return list.find((i) => i.toLowerCase() === v.toLowerCase()) ?? v;
 }
 
+export const cleanIndustry = (raw: string) => cleanTyped(raw, INDUSTRIES);
 export const isListedIndustry = (v: string) => (INDUSTRIES as readonly string[]).includes(v);
 
 export const STAGES = ["idea", "pre_seed", "seed", "series_a"] as const;
@@ -37,6 +39,9 @@ export const STAGE_LABEL: Record<Stage, string> = {
 };
 
 export const GEOGRAPHIES = ["Kazakhstan", "Uzbekistan", "Kyrgyzstan", "Central Asia", "CIS", "Global"] as const;
+
+export const cleanGeography = (raw: string) => cleanTyped(raw, GEOGRAPHIES);
+export const isListedGeography = (v: string) => (GEOGRAPHIES as readonly string[]).includes(v);
 
 export const TRACTION_RANGES = ["Pre-revenue", "<$1K MRR", "$1–10K MRR", "$10–50K MRR", "$50K+ MRR"] as const;
 

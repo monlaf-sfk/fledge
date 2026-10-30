@@ -7,6 +7,7 @@ import {
   INVESTOR_COLUMNS,
   INVESTOR_TYPES,
   INVESTOR_TYPE_LABEL,
+  isListedGeography,
   isListedIndustry,
   OTHER_INDUSTRY,
   STAGES,
@@ -118,7 +119,20 @@ async function FounderForm({ supabase, ownCardId, email }: FormProps) {
             placeholder="Only if you chose Other, e.g. Gaming"
           />
           <Select label="Stage" name="stage" defaultValue={s.stage ?? ""} options={opts(STAGES, STAGE_LABEL)} required />
-          <Select label="Geography" name="geography" defaultValue={s.geography ?? ""} options={opts(GEOGRAPHIES)} required />
+          <Select
+            label="Geography"
+            name="geography"
+            defaultValue={!s.geography ? "" : isListedGeography(s.geography) ? s.geography : OTHER_INDUSTRY}
+            options={[...opts(GEOGRAPHIES), { value: OTHER_INDUSTRY, label: "Other (type below)" }]}
+            required
+          />
+          <TextField
+            label="Other geography"
+            name="geography_other"
+            maxLength={40}
+            defaultValue={s.geography && !isListedGeography(s.geography) ? s.geography : ""}
+            placeholder="Only if you chose Other, e.g. Tajikistan"
+          />
           <Select label="Traction" name="traction_range" defaultValue={s.traction_range ?? ""} options={opts(TRACTION_RANGES)} required />
           <TextField label="Funding target, USD" name="funding_target_usd" inputMode="numeric" defaultValue={s.funding_target_usd} placeholder="300000" required />
           <TextField label="Team size" name="team_size" type="number" min={1} max={500} defaultValue={s.team_size} placeholder="5" required />
@@ -184,6 +198,13 @@ async function InvestorForm({ supabase, ownCardId, email }: FormProps) {
         />
         <ChipGroup label="Stages" name="stages" options={opts(STAGES, STAGE_LABEL)} defaultValues={i.stages} />
         <ChipGroup label="Geographies" name="geographies" options={opts(GEOGRAPHIES)} defaultValues={i.geographies} />
+        <TextField
+          label="Other geographies"
+          name="geographies_other"
+          maxLength={130}
+          defaultValue={(i.geographies ?? []).filter((x) => !isListedGeography(x)).join(", ")}
+          placeholder="Optional, comma separated, e.g. Tajikistan, Turkey"
+        />
         <div className="grid gap-5 sm:grid-cols-2">
           <TextField label="Min ticket, USD" name="ticket_min_usd" inputMode="numeric" defaultValue={i.ticket_min_usd} placeholder="25000" required />
           <TextField label="Max ticket, USD" name="ticket_max_usd" inputMode="numeric" defaultValue={i.ticket_max_usd} placeholder="100000" required />

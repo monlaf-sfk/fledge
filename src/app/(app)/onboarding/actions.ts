@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import {
+  cleanGeography,
   cleanIndustry,
   GEOGRAPHIES,
   INDUSTRIES,
@@ -21,11 +22,11 @@ const oneOf = <T extends string>(list: readonly T[], v: string): v is T => (list
 const manyOf = <T extends string>(list: readonly T[], f: FormData, k: string) =>
   f.getAll(k).map(String).filter((v): v is T => oneOf(list, v));
 
-// Listed industries plus up to 3 typed ones ("Other", comma separated), no duplicates.
-function mergeIndustries(listed: string[], typed: string) {
+// Listed values plus up to 3 typed ones ("Other", comma separated), no duplicates.
+function mergeTyped(listed: string[], typed: string, clean: (raw: string) => string | null) {
   const extra = typed
     .split(",")
-    .map((t) => cleanIndustry(t))
+    .map((t) => clean(t))
     .filter((t): t is string => Boolean(t))
     .slice(0, 3);
   const seen = new Set<string>();
@@ -78,7 +79,13 @@ export async function saveFounder(_prev: OnboardingState, f: FormData): Promise<
     return { error: "Choose an industry." };
   }
   if (!oneOf(STAGES, card.stage)) return { error: "Choose a stage." };
-  if (!oneOf(GEOGRAPHIES, card.geography)) return { error: "Choose a geography." };
+  if (card.geography === OTHER_INDUSTRY) {
+    const typed = cleanGeography(str(f, "geography_other"));
+    if (!typed) return { error: "Type your country or city (2–40 characters)." };
+    card.geography = typed;
+  } else if (!oneOf(GEOGRAPHIES, card.geography)) {
+    return { error: "Choose a geography." };
+  }
   if (!oneOf(TRACTION_RANGES, card.traction_range)) return { error: "Choose a traction range." };
   if (!(card.funding_target_usd > 0)) return { error: "Enter the funding target in USD." };
   if (!(card.team_size >= 1 && card.team_size <= 500)) return { error: "Team size must be 1–500." };
@@ -125,9 +132,9 @@ export async function saveInvestor(_prev: OnboardingState, f: FormData): Promise
     display_name: str(f, "display_name"),
     investor_type: str(f, "investor_type"),
     thesis: str(f, "thesis"),
-    industries: mergeIndustries(manyOf(INDUSTRIES, f, "industries"), str(f, "industries_other")),
+    industries: mergeTyped(manyOf(INDUSTRIES, f, "industries"), str(f, "industries_other"), cleanIndustry),
     stages: manyOf(STAGES, f, "stages"),
-    geographies: manyOf(GEOGRAPHIES, f, "geographies"),
+    geographies: mergeTyped(manyOf(GEOGRAPHIES, f, "geographies"), str(f, "geographies_other"), cleanGeography),
     ticket_min_usd: int(f, "ticket_min_usd"),
     ticket_max_usd: int(f, "ticket_max_usd"),
     portfolio: str(f, "portfolio"),
