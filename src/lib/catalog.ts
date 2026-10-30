@@ -13,6 +13,20 @@ export const INDUSTRIES = [
   "Agritech",
 ] as const;
 
+// "Other" lets users type an industry that is not in the list (usability test feedback, T2–T5).
+export const OTHER_INDUSTRY = "Other";
+
+// Normalise a typed industry: trim, single spaces, 2–40 safe characters. null = invalid.
+export function cleanIndustry(raw: string) {
+  const v = raw.replace(/\s+/g, " ").trim();
+  if (v.length < 2 || v.length > 40) return null;
+  if (!/^[\p{L}\p{N} &/+.,'()-]+$/u.test(v)) return null;
+  const known = INDUSTRIES.find((i) => i.toLowerCase() === v.toLowerCase());
+  return known ?? v;
+}
+
+export const isListedIndustry = (v: string) => (INDUSTRIES as readonly string[]).includes(v);
+
 export const STAGES = ["idea", "pre_seed", "seed", "series_a"] as const;
 export type Stage = (typeof STAGES)[number];
 export const STAGE_LABEL: Record<Stage, string> = {

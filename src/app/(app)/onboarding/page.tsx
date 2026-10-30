@@ -7,6 +7,8 @@ import {
   INVESTOR_COLUMNS,
   INVESTOR_TYPES,
   INVESTOR_TYPE_LABEL,
+  isListedIndustry,
+  OTHER_INDUSTRY,
   STAGES,
   STAGE_LABEL,
   STARTUP_COLUMNS,
@@ -101,7 +103,20 @@ async function FounderForm({ supabase, ownCardId, email }: FormProps) {
         />
         <TextArea label="Problem & solution" name="problem" defaultValue={s.problem} maxLength={600} />
         <div className="grid gap-5 sm:grid-cols-2">
-          <Select label="Industry" name="industry" defaultValue={s.industry ?? ""} options={opts(INDUSTRIES)} required />
+          <Select
+            label="Industry"
+            name="industry"
+            defaultValue={!s.industry ? "" : isListedIndustry(s.industry) ? s.industry : OTHER_INDUSTRY}
+            options={[...opts(INDUSTRIES), { value: OTHER_INDUSTRY, label: "Other (type below)" }]}
+            required
+          />
+          <TextField
+            label="Other industry"
+            name="industry_other"
+            maxLength={40}
+            defaultValue={s.industry && !isListedIndustry(s.industry) ? s.industry : ""}
+            placeholder="Only if you chose Other, e.g. Gaming"
+          />
           <Select label="Stage" name="stage" defaultValue={s.stage ?? ""} options={opts(STAGES, STAGE_LABEL)} required />
           <Select label="Geography" name="geography" defaultValue={s.geography ?? ""} options={opts(GEOGRAPHIES)} required />
           <Select label="Traction" name="traction_range" defaultValue={s.traction_range ?? ""} options={opts(TRACTION_RANGES)} required />
@@ -160,6 +175,13 @@ async function InvestorForm({ supabase, ownCardId, email }: FormProps) {
         </div>
         <TextArea label="Investment thesis" name="thesis" defaultValue={i.thesis} required maxLength={600} placeholder="What you invest in and why" />
         <ChipGroup label="Industries" name="industries" options={opts(INDUSTRIES)} defaultValues={i.industries} />
+        <TextField
+          label="Other industries"
+          name="industries_other"
+          maxLength={130}
+          defaultValue={(i.industries ?? []).filter((x) => !isListedIndustry(x)).join(", ")}
+          placeholder="Optional, comma separated, e.g. Gaming, Biotech"
+        />
         <ChipGroup label="Stages" name="stages" options={opts(STAGES, STAGE_LABEL)} defaultValues={i.stages} />
         <ChipGroup label="Geographies" name="geographies" options={opts(GEOGRAPHIES)} defaultValues={i.geographies} />
         <div className="grid gap-5 sm:grid-cols-2">

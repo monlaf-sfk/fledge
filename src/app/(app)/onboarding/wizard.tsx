@@ -8,6 +8,7 @@ import {
   INDUSTRIES,
   INVESTOR_TYPES,
   INVESTOR_TYPE_LABEL,
+  OTHER_INDUSTRY,
   STAGES,
   STAGE_LABEL,
   TRACTION_RANGES,
@@ -43,7 +44,8 @@ const TICKETS = [
 type Founder = {
   name: string;
   pitch: string;
-  industry: string;
+  industry: string; // a listed industry or OTHER_INDUSTRY
+  industryOther: string;
   stage: Stage | "";
   traction_range: string;
   team_size: number;
@@ -55,6 +57,8 @@ type Investor = {
   display_name: string;
   investor_type: InvestorType | "";
   industries: string[];
+  otherOn: boolean;
+  industriesOther: string; // comma separated
   stages: Stage[];
   geographies: string[];
   ticket: number; // index in TICKETS
@@ -62,11 +66,11 @@ type Investor = {
 };
 
 const EMPTY_FOUNDER: Founder = {
-  name: "", pitch: "", industry: "", stage: "", traction_range: "", team_size: 0,
+  name: "", pitch: "", industry: "", industryOther: "", stage: "", traction_range: "", team_size: 0,
   funding_target_usd: 0, geography: "", looking_for: [],
 };
 const EMPTY_INVESTOR: Investor = {
-  display_name: "", investor_type: "", industries: [], stages: [], geographies: [], ticket: -1, thesis: "",
+  display_name: "", investor_type: "", industries: [], otherOn: false, industriesOther: "", stages: [], geographies: [], ticket: -1, thesis: "",
 };
 
 function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; children: React.ReactNode }) {
@@ -136,25 +140,31 @@ export function OnboardingWizard({ role, firstName }: { role: "founder" | "inves
     void trackOnboardingStep(step + 1, total);
   }, [step]);
 
+  const allInvestorIndustries = [
+    ...inv.industries,
+    ...(inv.otherOn ? inv.industriesOther.split(",").map((t) => t.trim()).filter((t) => t.length >= 2) : []),
+  ];
+
   // Thesis is optional: if left empty we write one from the choices.
   const autoThesis = useMemo(() => {
     const type = inv.investor_type ? INVESTOR_TYPE_LABEL[inv.investor_type] : "Investor";
-    const inds = inv.industries.slice(0, 3).join(", ") || "early-stage startups";
+    const inds = allInvestorIndustries.slice(0, 3).join(", ") || "early-stage startups";
     const st = inv.stages.map((s) => STAGE_LABEL[s]).join("–");
     const geo = inv.geographies.slice(0, 2).join(", ");
     return `${type} investing in ${inds}${st ? ` at ${st}` : ""}${geo ? ` in ${geo}` : ""}.`;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inv]);
 
   const steps = founder
     ? [
         { title: "What are you building?", ok: f.name.trim().length >= 2 && f.pitch.trim().length >= 10 },
-        { title: "Which industry?", ok: Boolean(f.industry) },
+        { title: "Which industry?", ok: f.industry === OTHER_INDUSTRY ? f.industryOther.trim().length >= 2 : Boolean(f.industry) },
         { title: "Where are you now?", ok: Boolean(f.stage && f.traction_range && f.team_size) },
         { title: "What are you raising?", ok: Boolean(f.funding_target_usd && f.geography) },
       ]
     : [
         { title: "Who are you?", ok: inv.display_name.trim().length >= 2 && Boolean(inv.investor_type) },
-        { title: "What do you invest in?", ok: inv.industries.length > 0 },
+        { title: "What do you invest in?", ok: inv.industries.length > 0 || (inv.otherOn && inv.industriesOther.trim().length >= 2) },
         { title: "Which stage and where?", ok: inv.stages.length > 0 && inv.geographies.length > 0 },
         { title: "Typical cheque?", ok: inv.ticket >= 0 },
       ];
@@ -166,6 +176,7 @@ export function OnboardingWizard({ role, firstName }: { role: "founder" | "inves
       data.set("name", f.name.trim());
       data.set("pitch", f.pitch.trim());
       data.set("industry", f.industry);
+      if (f.industry === OTHER_INDUSTRY) data.set("industry_other", f.industryOther.trim());
       data.set("stage", f.stage);
       data.set("traction_range", f.traction_range);
       data.set("team_size", String(f.team_size));
@@ -177,6 +188,7 @@ export function OnboardingWizard({ role, firstName }: { role: "founder" | "inves
       data.set("display_name", inv.display_name.trim());
       data.set("investor_type", inv.investor_type);
       inv.industries.forEach((x) => data.append("industries", x));
+      if (inv.otherOn) data.set("industries_other", inv.industriesOther);
       inv.stages.forEach((x) => data.append("stages", x));
       inv.geographies.forEach((x) => data.append("geographies", x));
       data.set("ticket_min_usd", String(t.min));
@@ -198,7 +210,7 @@ export function OnboardingWizard({ role, firstName }: { role: "founder" | "inves
         id: "preview", owner_id: null, is_demo: false, problem: "",
         name: f.name || "Your startup",
         pitch: f.pitch || "Your one-line pitch appears here.",
-        industry: f.industry || "—",
+        industry: (f.industry === OTHER_INDUSTRY ? f.industryOther.trim() : f.industry) || "—",
         stage: (f.stage || "seed") as Stage,
         geography: f.geography || "—",
         traction_range: f.traction_range || "—",
@@ -214,7 +226,7 @@ export function OnboardingWizard({ role, firstName }: { role: "founder" | "inves
         display_name: inv.display_name || "Your name or fund",
         investor_type: (inv.investor_type || "angel") as InvestorType,
         thesis: inv.thesis.trim().length >= 10 ? inv.thesis : autoThesis,
-        industries: inv.industries.length ? inv.industries : ["—"],
+        industries: allInvestorIndustries.length ? allInvestorIndustries : ["—"],
         stages: inv.stages.length ? inv.stages : (["seed"] as Stage[]),
         geographies: inv.geographies.length ? inv.geographies : ["—"],
         ticket_min_usd: inv.ticket >= 0 ? TICKETS[inv.ticket].min : 0,
@@ -272,11 +284,27 @@ export function OnboardingWizard({ role, firstName }: { role: "founder" | "inves
             </>
           )}
           {founder && step === 1 && (
-            <Group label="Industry">
-              {INDUSTRIES.map((x) => (
-                <Chip key={x} on={f.industry === x} onClick={() => { setF((p) => ({ ...p, industry: x })); setTimeout(() => setStep(2), 220); }}>{x}</Chip>
-              ))}
-            </Group>
+            <>
+              <Group label="Industry">
+                {INDUSTRIES.map((x) => (
+                  <Chip key={x} on={f.industry === x} onClick={() => { setF((p) => ({ ...p, industry: x })); setTimeout(() => setStep(2), 220); }}>{x}</Chip>
+                ))}
+                <Chip on={f.industry === OTHER_INDUSTRY} onClick={() => setF((p) => ({ ...p, industry: OTHER_INDUSTRY }))}>Other…</Chip>
+              </Group>
+              {f.industry === OTHER_INDUSTRY && (
+                <div className="rise">
+                  <input
+                    autoFocus
+                    className={inputCls}
+                    placeholder="Type your industry, e.g. Gaming"
+                    value={f.industryOther}
+                    maxLength={40}
+                    onChange={(e) => setF((p) => ({ ...p, industryOther: e.target.value }))}
+                  />
+                  <p className="mt-2 text-xs text-ink-soft">Investors who list the same industry will see a match on it.</p>
+                </div>
+              )}
+            </>
           )}
           {founder && step === 2 && (
             <>
@@ -314,9 +342,24 @@ export function OnboardingWizard({ role, firstName }: { role: "founder" | "inves
             </>
           )}
           {!founder && step === 1 && (
-            <Group label="Industries" hint="pick all that apply">
-              {INDUSTRIES.map((x) => <Chip key={x} on={inv.industries.includes(x)} onClick={() => setInv((p) => ({ ...p, industries: toggle(p.industries, x) }))}>{x}</Chip>)}
-            </Group>
+            <>
+              <Group label="Industries" hint="pick all that apply">
+                {INDUSTRIES.map((x) => <Chip key={x} on={inv.industries.includes(x)} onClick={() => setInv((p) => ({ ...p, industries: toggle(p.industries, x) }))}>{x}</Chip>)}
+                <Chip on={inv.otherOn} onClick={() => setInv((p) => ({ ...p, otherOn: !p.otherOn }))}>Other…</Chip>
+              </Group>
+              {inv.otherOn && (
+                <div className="rise">
+                  <input
+                    autoFocus
+                    className={inputCls}
+                    placeholder="e.g. Gaming, Biotech (up to 3, comma separated)"
+                    value={inv.industriesOther}
+                    maxLength={130}
+                    onChange={(e) => setInv((p) => ({ ...p, industriesOther: e.target.value }))}
+                  />
+                </div>
+              )}
+            </>
           )}
           {!founder && step === 2 && (
             <>

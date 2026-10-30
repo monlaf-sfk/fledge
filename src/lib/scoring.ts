@@ -21,7 +21,9 @@ export function fitScore(startup: StartupCard, investor: InvestorCard): Fit {
   let score = 0;
   const reasons: string[] = [];
 
-  if (investor.industries.includes(startup.industry)) {
+  // Case-insensitive so typed ("Other") industries match too, e.g. "Gaming" ↔ "gaming".
+  const industry = startup.industry.toLowerCase();
+  if (investor.industries.some((i) => i.toLowerCase() === industry)) {
     score += 35;
     reasons.push(`Invests in ${startup.industry}`);
   }

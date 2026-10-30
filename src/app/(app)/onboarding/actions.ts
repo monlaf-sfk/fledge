@@ -2,8 +2,10 @@
 
 import { redirect } from "next/navigation";
 import {
+  cleanIndustry,
   GEOGRAPHIES,
   INDUSTRIES,
+  OTHER_INDUSTRY,
   INVESTOR_TYPES,
   STAGES,
   TRACTION_RANGES,
@@ -18,6 +20,22 @@ const int = (f: FormData, k: string) => Number.parseInt(str(f, k).replace(/[\s,]
 const oneOf = <T extends string>(list: readonly T[], v: string): v is T => (list as readonly string[]).includes(v);
 const manyOf = <T extends string>(list: readonly T[], f: FormData, k: string) =>
   f.getAll(k).map(String).filter((v): v is T => oneOf(list, v));
+
+// Listed industries plus up to 3 typed ones ("Other", comma separated), no duplicates.
+function mergeIndustries(listed: string[], typed: string) {
+  const extra = typed
+    .split(",")
+    .map((t) => cleanIndustry(t))
+    .filter((t): t is string => Boolean(t))
+    .slice(0, 3);
+  const seen = new Set<string>();
+  return [...listed, ...extra].filter((i) => {
+    const k = i.toLowerCase();
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+}
 
 function cleanUrl(v: string) {
   if (!v) return "";
@@ -52,7 +70,13 @@ export async function saveFounder(_prev: OnboardingState, f: FormData): Promise<
   if (card.name.length < 2) return { error: "Enter the startup name." };
   if (card.pitch.length < 10 || card.pitch.length > 140) return { error: "One-line pitch must be 10–140 characters." };
   if (card.problem.length > 600) return { error: "Problem description must be at most 600 characters." };
-  if (!oneOf(INDUSTRIES, card.industry)) return { error: "Choose an industry." };
+  if (card.industry === OTHER_INDUSTRY) {
+    const typed = cleanIndustry(str(f, "industry_other"));
+    if (!typed) return { error: "Type your industry (2–40 characters)." };
+    card.industry = typed;
+  } else if (!oneOf(INDUSTRIES, card.industry)) {
+    return { error: "Choose an industry." };
+  }
   if (!oneOf(STAGES, card.stage)) return { error: "Choose a stage." };
   if (!oneOf(GEOGRAPHIES, card.geography)) return { error: "Choose a geography." };
   if (!oneOf(TRACTION_RANGES, card.traction_range)) return { error: "Choose a traction range." };
@@ -82,7 +106,13 @@ export async function saveFounder(_prev: OnboardingState, f: FormData): Promise<
   });
   if (privErr) return { error: privErr.message };
 
-  if (!ownCardId) await track(supabase, userId, "profile_completed", { role });
+  if (!ownCardId) {
+    await track(supabase, userId, "profile_completed", {
+      role,
+      custom_industry: !(INDUSTRIES as readonly string[]).includes(card.industry),
+      industry: card.industry,
+    });
+  }
   redirect(ownCardId ? "/dashboard" : "/discover");
 }
 
@@ -95,7 +125,7 @@ export async function saveInvestor(_prev: OnboardingState, f: FormData): Promise
     display_name: str(f, "display_name"),
     investor_type: str(f, "investor_type"),
     thesis: str(f, "thesis"),
-    industries: manyOf(INDUSTRIES, f, "industries"),
+    industries: mergeIndustries(manyOf(INDUSTRIES, f, "industries"), str(f, "industries_other")),
     stages: manyOf(STAGES, f, "stages"),
     geographies: manyOf(GEOGRAPHIES, f, "geographies"),
     ticket_min_usd: int(f, "ticket_min_usd"),
@@ -133,7 +163,10 @@ export async function saveInvestor(_prev: OnboardingState, f: FormData): Promise
   });
   if (privErr) return { error: privErr.message };
 
-  if (!ownCardId) await track(supabase, userId, "profile_completed", { role });
+  if (!ownCardId) {
+    const custom = card.industries.filter((i) => !(INDUSTRIES as readonly string[]).includes(i));
+    await track(supabase, userId, "profile_completed", { role, custom_industry: custom.length > 0, custom_industries: custom });
+  }
   redirect(ownCardId ? "/dashboard" : "/discover");
 }
 
