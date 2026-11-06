@@ -81,5 +81,6 @@ export async function signIn(_prev: AuthState, formData: FormData): Promise<Auth
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
-  redirect("/");
+  // Land on the login form, not the landing page: reviewers could not find how to log back in.
+  redirect("/login?signed_out=1");
 }

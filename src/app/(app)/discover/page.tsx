@@ -21,9 +21,9 @@ export default async function DiscoverPage() {
           happens only when both sides press Interested.
         </p>
         <ul className="mt-8 space-y-2 text-sm text-ink-soft">
-          <li><b className="text-ink">Pass</b> — not relevant, hide it.</li>
-          <li><b className="text-ink">Save</b> — maybe later, keep it in Saved.</li>
-          <li><b className="text-ink">Interested</b> — want to connect.</li>
+          <li><b className="text-ink">Pass</b> — drag left or press ✕. Not relevant, hide it.</li>
+          <li><b className="text-ink">Save</b> — press ☆. Maybe later, keep it in Saved.</li>
+          <li><b className="text-ink">Interested</b> — drag right or press ♥. Want to connect.</li>
         </ul>
         <a
           href="/onboarding"
@@ -34,7 +34,7 @@ export default async function DiscoverPage() {
         </a>
       </aside>
       <section>
-        <Deck items={items} />
+        <Deck items={items} other={session.role === "founder" ? "investors" : "startups"} />
       </section>
     </main>
   );

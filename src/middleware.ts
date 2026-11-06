@@ -9,6 +9,7 @@ export const config = {
   // Only routes that need the session; the landing page and static files skip middleware.
   matcher: [
     "/dashboard/:path*",
+    "/account/:path*",
     "/onboarding/:path*",
     "/discover/:path*",
     "/saved/:path*",

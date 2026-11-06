@@ -8,9 +8,9 @@ export const metadata: Metadata = { title: "Log in · Fledge" };
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string; error?: string }>;
+  searchParams: Promise<{ next?: string; error?: string; signed_out?: string }>;
 }) {
-  const { next, error } = await searchParams;
+  const { next, error, signed_out } = await searchParams;
 
   return (
     <AuthShell
@@ -37,7 +37,7 @@ export default async function LoginPage({
       }
     >
       <PageView name="login_viewed" />
-      <LoginForm next={next} linkError={error === "link"} />
+      <LoginForm next={next} linkError={error === "link"} signedOut={signed_out === "1"} />
     </AuthShell>
   );
 }

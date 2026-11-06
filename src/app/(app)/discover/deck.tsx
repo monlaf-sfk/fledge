@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { InvestorCardView, StartupCardView } from "@/components/cards";
 import type { FeedItem } from "@/lib/feed";
 import { swipe, trackCardView, type SwipeAction } from "./actions";
@@ -18,14 +18,49 @@ const EXIT: Record<SwipeAction, string> = {
   interested: "translate-x-[120%] rotate-12 opacity-0",
 };
 
-export function Deck({ items }: { items: FeedItem[] }) {
+// Drag past this many pixels to commit a swipe with the mouse or a finger.
+const SWIPE_AT = 110;
+const HINT_KEY = "fledge_hint_deck";
+
+type Toast = { text: string; href?: string; cta?: string };
+
+const TOAST: Record<SwipeAction, Toast> = {
+  pass: { text: "Skipped. This card will not show again." },
+  save: { text: "Saved for later.", href: "/saved", cta: "Open Saved" },
+  interested: { text: "Interest sent. If they are interested too, you match." },
+};
+
+export function Deck({ items, other }: { items: FeedItem[]; other: string }) {
   // Track handled ids, not an index: a server refresh can hand us a shorter list.
   const [handled, setHandled] = useState<Set<string>>(() => new Set());
   const [total] = useState(items.length);
   const [leaving, setLeaving] = useState<SwipeAction | null>(null);
   const [match, setMatch] = useState<{ id: string; name: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [toast, setToast] = useState<Toast | null>(null);
+  const [hint, setHint] = useState(false);
+  const [drag, setDrag] = useState<{ dx: number; dy: number } | null>(null);
+  const start = useRef<{ x: number; y: number; id: number } | null>(null);
   const [, startTransition] = useTransition();
+
+  // First-visit hint; hidden for good after "Got it" or the first swipe.
+  useEffect(() => {
+    try {
+      if (!localStorage.getItem(HINT_KEY)) setHint(true);
+    } catch {}
+  }, []);
+  const dismissHint = useCallback(() => {
+    setHint(false);
+    try {
+      localStorage.setItem(HINT_KEY, "1");
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 3500);
+    return () => clearTimeout(t);
+  }, [toast]);
 
   const queue = items.filter((i) => !handled.has(i.card.id));
   const current = queue[0];
@@ -43,10 +78,12 @@ export function Deck({ items }: { items: FeedItem[] }) {
       if (!current || leaving) return;
       setError(null);
       setLeaving(action);
+      dismissHint();
       const item = current;
       startTransition(async () => {
         const res = await swipe(item.card.id, action, item.fit.score);
         if (res.error) setError(res.error);
+        else if (!res.matchId) setToast(TOAST[action]);
         if (res.matchId) {
           setMatch({
             id: res.matchId,
@@ -59,8 +96,30 @@ export function Deck({ items }: { items: FeedItem[] }) {
         setLeaving(null);
       }, 280);
     },
-    [current, leaving],
+    [current, leaving, dismissHint],
   );
+
+  // Mouse / touch drag: right = Interested, left = Pass. Save stays a button.
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (leaving || match || e.button !== 0) return;
+    if ((e.target as HTMLElement).closest("a, button")) return;
+    start.current = { x: e.clientX, y: e.clientY, id: e.pointerId };
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {}
+  };
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const s = start.current;
+    if (!s || s.id !== e.pointerId) return;
+    setDrag({ dx: e.clientX - s.x, dy: (e.clientY - s.y) * 0.25 });
+  };
+  const onPointerEnd = () => {
+    const dx = drag?.dx ?? 0;
+    start.current = null;
+    setDrag(null);
+    if (dx > SWIPE_AT) act("interested");
+    else if (dx < -SWIPE_AT) act("pass");
+  };
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -77,8 +136,8 @@ export function Deck({ items }: { items: FeedItem[] }) {
   if (!current) {
     return (
       <div className="rounded-[26px] border-2 border-dashed border-ink/20 p-10 text-center">
-        <p className="font-display text-3xl">You&apos;ve seen everyone for now.</p>
-        <p className="mt-3 text-ink-soft">New profiles appear here as they join. Revisit the ones you saved.</p>
+        <p className="font-display text-3xl">No more {other} available.</p>
+        <p className="mt-3 text-ink-soft">Try again later — new profiles appear here as they join. Meanwhile, revisit the ones you saved.</p>
         <div className="mt-8 flex justify-center gap-3">
           <Link href="/saved" className="rounded-full bg-ink px-5 py-3 font-medium text-paper hover:bg-signal">
             Open Saved
@@ -95,21 +154,63 @@ export function Deck({ items }: { items: FeedItem[] }) {
 
   return (
     <div>
+      {hint && (
+        <div role="note" className="mb-5 flex items-start gap-4 rounded-2xl border border-signal/40 bg-signal/10 p-4 text-sm">
+          <span aria-hidden className="text-xl">💡</span>
+          <div className="flex-1 space-y-1">
+            <p><b>Drag the card right</b> to show interest, <b>left</b> to skip it.</p>
+            <p><b>Save</b> keeps it for later in Saved. Buttons and ← ↓ → keys work too.</p>
+          </div>
+          <button onClick={dismissHint} className="shrink-0 rounded-full bg-ink px-4 py-1.5 font-medium text-paper hover:bg-signal">
+            Got it
+          </button>
+        </div>
+      )}
       <div className="relative">
         {next && (
           <div aria-hidden className="pointer-events-none absolute inset-x-4 top-3 -z-0 scale-[0.97] opacity-40 blur-[1px]">
             {next.kind === "investor" ? <InvestorCardView i={next.card} /> : <StartupCardView s={next.card} />}
           </div>
         )}
-        <div
-          key={current.card.id}
-          className={`relative transition duration-300 ease-out ${leaving ? EXIT[leaving] : "rise"}`}
-        >
-          {current.kind === "investor" ? (
-            <InvestorCardView i={current.card} fit={current.fit} />
-          ) : (
-            <StartupCardView s={current.card} fit={current.fit} />
-          )}
+        <div key={current.card.id} className="rise">
+          <div
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerEnd}
+            onPointerCancel={onPointerEnd}
+            style={
+              drag
+                ? { transform: `translate(${drag.dx}px, ${drag.dy}px) rotate(${drag.dx / 18}deg)`, transition: "none" }
+                : undefined
+            }
+            className={`relative cursor-grab touch-pan-y select-none transition duration-300 ease-out active:cursor-grabbing ${
+              leaving ? EXIT[leaving] : ""
+            }`}
+          >
+            {current.kind === "investor" ? (
+              <InvestorCardView i={current.card} fit={current.fit} />
+            ) : (
+              <StartupCardView s={current.card} fit={current.fit} />
+            )}
+            {drag && (
+              <>
+                <span
+                  aria-hidden
+                  style={{ opacity: Math.min(1, Math.max(0, drag.dx / SWIPE_AT)) }}
+                  className="pointer-events-none absolute left-6 top-6 -rotate-12 rounded-xl border-4 border-signal bg-paper/90 px-4 py-1 font-display text-3xl font-semibold italic text-signal"
+                >
+                  Interested
+                </span>
+                <span
+                  aria-hidden
+                  style={{ opacity: Math.min(1, Math.max(0, -drag.dx / SWIPE_AT)) }}
+                  className="pointer-events-none absolute right-6 top-6 rotate-12 rounded-xl border-4 border-ink bg-paper/90 px-4 py-1 font-display text-3xl font-semibold italic text-ink"
+                >
+                  Pass
+                </span>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
@@ -130,14 +231,29 @@ export function Deck({ items }: { items: FeedItem[] }) {
         ))}
       </div>
       <p className="mt-4 text-center font-mono text-xs text-ink-soft">
-        {position + 1} / {total} · ranked by fit
+        {position + 1} / {total} · ranked by fit · drag the card or use the buttons
       </p>
       {error && <p role="alert" className="mt-3 text-center text-sm text-[#a8320a]">{error}</p>}
+
+      {toast && (
+        <div
+          role="status"
+          className="rise fixed inset-x-0 bottom-6 z-40 mx-auto flex w-fit max-w-[calc(100%-2rem)] items-center gap-4 rounded-full bg-ink px-5 py-3 text-sm text-paper shadow-xl"
+        >
+          {toast.text}
+          {toast.href && (
+            <Link href={toast.href} className="font-medium text-signal underline-offset-4 hover:underline">
+              {toast.cta}
+            </Link>
+          )}
+        </div>
+      )}
 
       {match && (
         <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 grid place-items-center bg-ink/70 p-5 backdrop-blur-sm">
           <div className="rise w-full max-w-md rounded-[28px] bg-paper p-8 text-center">
-            <p className="inline-block -rotate-6 rounded-xl border-4 border-signal px-5 py-2 font-display text-4xl font-semibold italic text-signal">
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink-soft">You have a new match!</p>
+            <p className="mt-4 inline-block -rotate-6 rounded-xl border-4 border-signal px-5 py-2 font-display text-4xl font-semibold italic text-signal">
               It&apos;s a match
             </p>
             <p className="mt-6 text-lg">

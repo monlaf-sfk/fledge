@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ActionForm } from "@/components/action-form";
+import { MoneyField, SelectWithOther } from "@/components/form-client";
 import { ChipGroup, Section, Select, TextArea, TextField, opts } from "@/components/form-controls";
 import {
   GEOGRAPHIES,
@@ -104,38 +105,28 @@ async function FounderForm({ supabase, ownCardId, email }: FormProps) {
         />
         <TextArea label="Problem & solution" name="problem" defaultValue={s.problem} maxLength={600} />
         <div className="grid gap-5 sm:grid-cols-2">
-          <Select
+          <SelectWithOther
             label="Industry"
             name="industry"
+            otherName="industry_other"
             defaultValue={!s.industry ? "" : isListedIndustry(s.industry) ? s.industry : OTHER_INDUSTRY}
-            options={[...opts(INDUSTRIES), { value: OTHER_INDUSTRY, label: "Other (type below)" }]}
-            required
-          />
-          <TextField
-            label="Other industry"
-            name="industry_other"
-            maxLength={40}
-            defaultValue={s.industry && !isListedIndustry(s.industry) ? s.industry : ""}
-            placeholder="Only if you chose Other, e.g. Gaming"
+            otherValue={s.industry && !isListedIndustry(s.industry) ? s.industry : ""}
+            options={[...opts(INDUSTRIES), { value: OTHER_INDUSTRY, label: "Other…" }]}
+            placeholder="Your industry, e.g. Gaming"
           />
           <Select label="Stage" name="stage" defaultValue={s.stage ?? ""} options={opts(STAGES, STAGE_LABEL)} required />
-          <Select
+          <SelectWithOther
             label="Geography"
             name="geography"
+            otherName="geography_other"
             defaultValue={!s.geography ? "" : isListedGeography(s.geography) ? s.geography : OTHER_INDUSTRY}
-            options={[...opts(GEOGRAPHIES), { value: OTHER_INDUSTRY, label: "Other (type below)" }]}
-            required
-          />
-          <TextField
-            label="Other geography"
-            name="geography_other"
-            maxLength={40}
-            defaultValue={s.geography && !isListedGeography(s.geography) ? s.geography : ""}
-            placeholder="Only if you chose Other, e.g. Tajikistan"
+            otherValue={s.geography && !isListedGeography(s.geography) ? s.geography : ""}
+            options={[...opts(GEOGRAPHIES), { value: OTHER_INDUSTRY, label: "Other…" }]}
+            placeholder="Country or city, e.g. Tajikistan"
           />
           <Select label="Traction" name="traction_range" defaultValue={s.traction_range ?? ""} options={opts(TRACTION_RANGES)} required />
-          <TextField label="Funding target, USD" name="funding_target_usd" inputMode="numeric" defaultValue={s.funding_target_usd} placeholder="300000" required />
-          <TextField label="Team size" name="team_size" type="number" min={1} max={500} defaultValue={s.team_size} placeholder="5" required />
+          <MoneyField label="Funding target, USD" name="funding_target_usd" defaultValue={s.funding_target_usd} placeholder="300,000" />
+          <TextField label="Team size, people" name="team_size" inputMode="numeric" pattern="[0-9]*" maxLength={3} defaultValue={s.team_size} placeholder="5" required />
         </div>
         <ChipGroup
           label="Looking for"
@@ -206,8 +197,8 @@ async function InvestorForm({ supabase, ownCardId, email }: FormProps) {
           placeholder="Optional, comma separated, e.g. Tajikistan, Turkey"
         />
         <div className="grid gap-5 sm:grid-cols-2">
-          <TextField label="Min ticket, USD" name="ticket_min_usd" inputMode="numeric" defaultValue={i.ticket_min_usd} placeholder="25000" required />
-          <TextField label="Max ticket, USD" name="ticket_max_usd" inputMode="numeric" defaultValue={i.ticket_max_usd} placeholder="100000" required />
+          <MoneyField label="Min ticket, USD" name="ticket_min_usd" defaultValue={i.ticket_min_usd} placeholder="25,000" />
+          <MoneyField label="Max ticket, USD" name="ticket_max_usd" defaultValue={i.ticket_max_usd} placeholder="100,000" />
         </div>
         <TextField label="Selected portfolio" name="portfolio" defaultValue={i.portfolio} maxLength={400} placeholder="Optional" />
       </Section>

@@ -1,5 +1,5 @@
 import { Logo } from "@/components/logo";
-import { NavLinks } from "@/components/nav-links";
+import { AccountLink, NavLinks } from "@/components/nav-links";
 import { AnalyticsProvider } from "@/components/analytics-provider";
 import { signOut } from "@/app/auth/actions";
 import { requireSession } from "@/lib/session";
@@ -14,21 +14,16 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4">
           <Logo />
           {(ownCardId || isAdmin) && <NavLinks isAdmin={isAdmin} />}
-          <div className="flex items-center gap-3">
-            <span
-              className={`hidden rounded-full px-3 py-1 font-mono text-[11px] uppercase tracking-[0.16em] sm:inline ${
-                role === "investor" ? "bg-moss text-paper" : "bg-signal text-white"
-              }`}
-              title={fullName}
-            >
-              {role}
-            </span>
+          {ownCardId || isAdmin ? (
+            <AccountLink fullName={fullName} role={role} />
+          ) : (
+            // Mid-onboarding there is no account page yet; keep a way out.
             <form action={signOut}>
               <button className="rounded-full border border-ink/20 px-4 py-2 text-sm font-medium transition hover:border-ink">
                 Log out
               </button>
             </form>
-          </div>
+          )}
         </div>
         {(ownCardId || isAdmin) && (
           <div className="border-t border-line md:hidden">

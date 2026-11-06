@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Logo } from "@/components/logo";
 import { TrackedLink } from "@/components/public-track";
@@ -71,11 +72,14 @@ export function StickyCta() {
           <nav aria-label="Sections" className="hidden items-center gap-0.5 lg:flex">
             {SECTIONS.map((s) => link(s))}
           </nav>
-          <div className="hidden shrink-0 items-center gap-2 text-sm md:flex">
-            <TrackedLink cta="sticky_founder" href="/signup?role=founder" className="rounded-full bg-signal px-4 py-2 font-medium text-white transition hover:bg-ink">
+          <div className="flex shrink-0 items-center gap-2 text-sm">
+            <Link href="/login" className="rounded-full px-3 py-2 font-medium text-ink-soft transition hover:text-ink">
+              Log in
+            </Link>
+            <TrackedLink cta="sticky_founder" href="/signup?role=founder" className="hidden rounded-full md:inline-block bg-signal px-4 py-2 font-medium text-white transition hover:bg-ink">
               I&apos;m raising
             </TrackedLink>
-            <TrackedLink cta="sticky_investor" href="/signup?role=investor" className="rounded-full border-2 border-ink px-4 py-1.5 font-medium transition hover:border-signal hover:text-signal">
+            <TrackedLink cta="sticky_investor" href="/signup?role=investor" className="hidden rounded-full md:inline-block border-2 border-ink px-4 py-1.5 font-medium transition hover:border-signal hover:text-signal">
               I&apos;m investing
             </TrackedLink>
           </div>

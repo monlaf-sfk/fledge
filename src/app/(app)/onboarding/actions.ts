@@ -120,7 +120,7 @@ export async function saveFounder(_prev: OnboardingState, f: FormData): Promise<
       industry: card.industry,
     });
   }
-  redirect(ownCardId ? "/dashboard" : "/discover");
+  redirect(ownCardId ? "/account?saved=1" : "/discover");
 }
 
 export async function saveInvestor(_prev: OnboardingState, f: FormData): Promise<OnboardingState> {
@@ -174,7 +174,7 @@ export async function saveInvestor(_prev: OnboardingState, f: FormData): Promise
     const custom = card.industries.filter((i) => !(INDUSTRIES as readonly string[]).includes(i));
     await track(supabase, userId, "profile_completed", { role, custom_industry: custom.length > 0, custom_industries: custom });
   }
-  redirect(ownCardId ? "/dashboard" : "/discover");
+  redirect(ownCardId ? "/account?saved=1" : "/discover");
 }
 
 // Funnel inside onboarding: which wizard step people reach. Fire-and-forget from the client.

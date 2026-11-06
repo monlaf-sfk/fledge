@@ -5,7 +5,7 @@ import { useActionState } from "react";
 import { signIn, type AuthState } from "@/app/auth/actions";
 import { Field, FormAlert } from "@/components/auth-shell";
 
-export function LoginForm({ next, linkError }: { next?: string; linkError?: boolean }) {
+export function LoginForm({ next, linkError, signedOut }: { next?: string; linkError?: boolean; signedOut?: boolean }) {
   const [state, action, pending] = useActionState<AuthState, FormData>(signIn, {});
 
   return (
@@ -14,7 +14,10 @@ export function LoginForm({ next, linkError }: { next?: string; linkError?: bool
       <Field label="Email" name="email" type="email" autoComplete="email" required defaultValue={state.fields?.email} placeholder="you@startup.kz" />
       <Field label="Password" name="password" type="password" autoComplete="current-password" required />
 
-      <FormAlert error={state.error ?? (linkError ? "The confirmation link is invalid or expired. Log in or sign up again." : undefined)} />
+      <FormAlert
+        error={state.error ?? (linkError ? "The confirmation link is invalid or expired. Log in or sign up again." : undefined)}
+        message={signedOut ? "You are logged out. Enter your email and password to log in again." : undefined}
+      />
 
       <button
         type="submit"
