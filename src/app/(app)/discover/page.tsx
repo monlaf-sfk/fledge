@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ArrowRight, Heart, Star, X } from "lucide-react";
 import { loadFeed } from "@/lib/feed";
 import { requireOnboarded } from "@/lib/session";
 import { Deck } from "./deck";
@@ -21,16 +22,19 @@ export default async function DiscoverPage() {
           happens only when both sides press Interested.
         </p>
         <ul className="mt-8 space-y-2 text-sm text-ink-soft">
-          <li><b className="text-ink">Pass</b> — drag left or press ✕. Not relevant, hide it.</li>
-          <li><b className="text-ink">Save</b> — press ☆. Maybe later, keep it in Saved.</li>
-          <li><b className="text-ink">Interested</b> — drag right or press ♥. Want to connect.</li>
+          <li><b className="text-ink">Pass</b> — drag left or press <X className="inline size-3 align-[-2px]" aria-hidden />. Not relevant, hide it.</li>
+          <li><b className="text-ink">Save</b> — press <Star className="inline size-3 align-[-2px]" aria-hidden />. Maybe later, keep it in Saved.</li>
+          <li><b className="text-ink">Interested</b> — drag right or press <Heart className="inline size-3 align-[-2px]" aria-hidden />. Want to connect.</li>
         </ul>
         <a
           href="/onboarding"
           className="mt-8 block max-w-sm rounded-2xl border border-dashed border-signal/50 bg-signal/5 p-4 text-sm transition hover:bg-signal/10"
         >
           <b>Add contacts{session.role === "founder" ? ", deck and metrics" : " and LinkedIn"}</b>
-          <span className="block text-ink-soft">Shown only after a match — makes the first call easier. Optional →</span>
+          <span className="flex items-center gap-1 text-ink-soft">
+            Shown only after a match — makes the first call easier. Optional
+            <ArrowRight className="size-3" aria-hidden />
+          </span>
         </a>
       </aside>
       <section>

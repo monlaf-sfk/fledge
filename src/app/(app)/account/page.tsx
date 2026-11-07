@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ArrowRight } from "lucide-react";
 import { signOut } from "@/app/auth/actions";
 import { requireSession } from "@/lib/session";
+import { DeleteAccountForm } from "./delete-account-form";
 import { NameForm } from "./name-form";
 
 export const metadata: Metadata = { title: "Account · Fledge" };
@@ -48,7 +50,10 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
             <Link key={s.label} href={s.href} className="group bg-paper p-6 transition hover:bg-white">
               <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-ink-soft">{s.label}</p>
               <p className="mt-4 font-display text-5xl">{s.value}</p>
-              <p className="mt-2 text-sm text-ink-soft transition group-hover:text-signal">{s.note} →</p>
+              <p className="mt-2 flex items-center gap-1 text-sm text-ink-soft transition group-hover:text-signal">
+                {s.note}
+                <ArrowRight className="size-3.5" aria-hidden />
+              </p>
             </Link>
           ))}
         </div>
@@ -90,6 +95,14 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
           </form>
         </section>
       </div>
+
+      <section className="mt-6 rounded-3xl border border-signal/30 bg-signal/5 p-6 sm:p-8">
+        <h2 className="font-display text-2xl">Delete account</h2>
+        <p className="mt-2 max-w-2xl text-sm text-ink-soft">
+          Permanently delete your account, profile, activity, matches and messages. This cannot be undone.
+        </p>
+        <DeleteAccountForm />
+      </section>
     </main>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { startTransition, useActionState, useEffect, useMemo, useRef, useState } from "react";
+import { ArrowLeft, ArrowRight, Minus, Plus } from "lucide-react";
 import { InvestorCardView, StartupCardView } from "@/components/cards";
 import { FormAlert } from "@/components/auth-shell";
 import {
@@ -110,7 +111,9 @@ function TeamSize({ value, onChange }: { value: number; onChange: (n: number) =>
   const btn = "grid h-12 w-12 place-items-center rounded-2xl border-2 border-ink/15 bg-white/70 text-xl font-medium transition hover:border-ink disabled:opacity-40";
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <button type="button" aria-label="Fewer people" className={btn} disabled={value <= 1} onClick={() => set((value || 1) - 1)}>−</button>
+      <button type="button" aria-label="Fewer people" className={btn} disabled={value <= 1} onClick={() => set((value || 1) - 1)}>
+        <Minus className="size-5" aria-hidden />
+      </button>
       <input
         type="number"
         inputMode="numeric"
@@ -122,7 +125,9 @@ function TeamSize({ value, onChange }: { value: number; onChange: (n: number) =>
         onChange={(e) => (e.target.value === "" ? onChange(0) : set(Number(e.target.value)))}
         className="h-12 w-20 rounded-2xl border-2 border-ink/15 bg-white/80 text-center text-lg font-medium outline-none focus:border-ink [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
       />
-      <button type="button" aria-label="More people" className={btn} disabled={value >= 500} onClick={() => set((value || 0) + 1)}>+</button>
+      <button type="button" aria-label="More people" className={btn} disabled={value >= 500} onClick={() => set((value || 0) + 1)}>
+        <Plus className="size-5" aria-hidden />
+      </button>
       <span className="mx-1 h-6 w-px bg-ink/15" aria-hidden />
       {[1, 2, 3, 5, 10].map((n) => (
         <Chip key={n} on={value === n} onClick={() => set(n)}>
@@ -482,17 +487,24 @@ export function OnboardingWizard({ role, firstName }: { role: "founder" | "inves
           <FormAlert error={state.error} />
           <div className="flex items-center gap-3">
             {step > 0 && (
-              <button type="button" onClick={() => setStep(step - 1)} className="rounded-2xl border-2 border-ink/15 px-5 py-4 font-medium hover:border-ink">
-                ← Back
+              <button type="button" onClick={() => setStep(step - 1)} className="inline-flex items-center gap-2 rounded-2xl border-2 border-ink/15 px-5 py-4 font-medium hover:border-ink">
+                <ArrowLeft className="size-4" aria-hidden /> Back
               </button>
             )}
             <button
               type="button"
               onClick={next}
               disabled={!current.ok || pending}
-              className="flex-1 rounded-2xl bg-signal px-6 py-4 text-lg font-medium text-white shadow-lg shadow-signal/25 transition hover:bg-ink disabled:bg-ink/20 disabled:shadow-none"
+              className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-signal px-6 py-4 text-lg font-medium text-white shadow-lg shadow-signal/25 transition hover:bg-ink disabled:bg-ink/20 disabled:shadow-none"
             >
-              {pending ? "Saving…" : step < total - 1 ? "Continue →" : founder ? "See matching investors →" : "See matching startups →"}
+              {pending ? (
+                "Saving…"
+              ) : (
+                <>
+                  {step < total - 1 ? "Continue" : founder ? "See matching investors" : "See matching startups"}
+                  <ArrowRight className="size-5" aria-hidden />
+                </>
+              )}
             </button>
           </div>
           <p className="text-center text-xs text-ink-soft">

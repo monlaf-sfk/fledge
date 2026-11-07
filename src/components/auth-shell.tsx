@@ -1,3 +1,4 @@
+import { ArrowRight } from "lucide-react";
 import { Logo } from "@/components/logo";
 
 export function AuthShell({
@@ -16,7 +17,9 @@ export function AuthShell({
       <section className="hidden flex-col justify-between bg-ink p-10 text-paper md:flex">
         <Logo inverted />
         <div>{aside}</div>
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-paper/40">Discover → Evaluate → Match → Connect</p>
+        <p className="flex flex-wrap items-center gap-1.5 font-mono text-xs uppercase tracking-[0.2em] text-paper/40">
+          Discover <ArrowRight className="size-3" aria-hidden /> Evaluate <ArrowRight className="size-3" aria-hidden /> Match <ArrowRight className="size-3" aria-hidden /> Connect
+        </p>
       </section>
       <section className="flex flex-col px-5 py-8 sm:px-10">
         <div className="md:hidden">

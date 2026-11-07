@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ArrowRight } from "lucide-react";
 import { ActionForm } from "@/components/action-form";
 import { MoneyField, SelectWithOther } from "@/components/form-client";
 import { ChipGroup, Section, Select, TextArea, TextField, opts } from "@/components/form-controls";
@@ -90,7 +91,16 @@ async function FounderForm({ supabase, ownCardId, email }: FormProps) {
   return (
     <ActionForm
       action={saveFounder}
-      submitLabel={ownCardId ? "Save changes" : "Save and start discovering →"}
+      submitLabel={
+        ownCardId ? (
+          "Save changes"
+        ) : (
+          <>
+            Save and start discovering
+            <ArrowRight className="size-5" aria-hidden />
+          </>
+        )
+      }
       pendingLabel="Saving…"
     >
       <Section title="Startup card" note="Visible to investors in the Discover feed.">
@@ -164,7 +174,16 @@ async function InvestorForm({ supabase, ownCardId, email }: FormProps) {
   return (
     <ActionForm
       action={saveInvestor}
-      submitLabel={ownCardId ? "Save changes" : "Save and start discovering →"}
+      submitLabel={
+        ownCardId ? (
+          "Save changes"
+        ) : (
+          <>
+            Save and start discovering
+            <ArrowRight className="size-5" aria-hidden />
+          </>
+        )
+      }
       pendingLabel="Saving…"
     >
       <Section title="Investor card" note="Visible to founders in the Discover feed.">

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { DemoBadge } from "@/components/cards";
 import { INVESTOR_TYPE_LABEL, STAGE_LABEL } from "@/lib/catalog";
 import { loadMatches } from "@/lib/matches";
@@ -44,7 +45,9 @@ export default async function MatchesPage() {
                     </p>
                     <p className="mt-1 truncate text-sm text-ink-soft">{sub}</p>
                   </div>
-                  <span className="shrink-0 rounded-full bg-ink px-4 py-2 text-sm font-medium text-paper">Chat →</span>
+                  <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-ink px-4 py-2 text-sm font-medium text-paper">
+                    Chat <ArrowRight className="size-3.5" aria-hidden />
+                  </span>
                 </Link>
               </li>
             );

@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { ArrowRight } from "lucide-react";
+import { AccountButton } from "@/components/landing/account-button";
 import { Logo } from "@/components/logo";
 import { TrackedLink } from "@/components/public-track";
 
@@ -18,7 +20,7 @@ const SECTIONS = [
   { id: "faq", label: "FAQ" },
 ];
 
-export function StickyCta() {
+export function StickyCta({ signedIn = false }: { signedIn?: boolean }) {
   const [shown, setShown] = useState(false);
   const [active, setActive] = useState<string | null>(null);
   const strip = useRef<HTMLDivElement>(null);
@@ -73,15 +75,21 @@ export function StickyCta() {
             {SECTIONS.map((s) => link(s))}
           </nav>
           <div className="flex shrink-0 items-center gap-2 text-sm">
-            <Link href="/login" className="rounded-full px-3 py-2 font-medium text-ink-soft transition hover:text-ink">
-              Log in
-            </Link>
-            <TrackedLink cta="sticky_founder" href="/signup?role=founder" className="hidden rounded-full md:inline-block bg-signal px-4 py-2 font-medium text-white transition hover:bg-ink">
-              I&apos;m raising
-            </TrackedLink>
-            <TrackedLink cta="sticky_investor" href="/signup?role=investor" className="hidden rounded-full md:inline-block border-2 border-ink px-4 py-1.5 font-medium transition hover:border-signal hover:text-signal">
-              I&apos;m investing
-            </TrackedLink>
+            {signedIn ? (
+              <AccountButton className="grid size-9 place-items-center rounded-full border border-ink/20 text-ink transition hover:border-signal hover:text-signal" />
+            ) : (
+              <>
+                <Link href="/login" className="rounded-full px-3 py-2 font-medium text-ink-soft transition hover:text-ink">
+                  Log in
+                </Link>
+                <TrackedLink cta="sticky_founder" href="/signup?role=founder" className="hidden rounded-full md:inline-block bg-signal px-4 py-2 font-medium text-white transition hover:bg-ink">
+                  I&apos;m raising
+                </TrackedLink>
+                <TrackedLink cta="sticky_investor" href="/signup?role=investor" className="hidden rounded-full md:inline-block border-2 border-ink px-4 py-1.5 font-medium transition hover:border-signal hover:text-signal">
+                  I&apos;m investing
+                </TrackedLink>
+              </>
+            )}
           </div>
         </div>
         {/* tablet + mobile: scrollable section strip */}
@@ -97,12 +105,21 @@ export function StickyCta() {
         style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}
       >
         <div className="grid grid-cols-2 gap-2">
-          <TrackedLink cta="sticky_m_founder" href="/signup?role=founder" className="rounded-xl bg-signal py-3 text-center font-medium text-white">
-            I&apos;m raising
-          </TrackedLink>
-          <TrackedLink cta="sticky_m_investor" href="/signup?role=investor" className="rounded-xl border-2 border-ink py-2.5 text-center font-medium">
-            I&apos;m investing
-          </TrackedLink>
+          {signedIn ? (
+            <Link href="/discover" className="col-span-2 inline-flex items-center justify-center gap-2 rounded-xl bg-signal py-3 text-center font-medium text-white">
+              Go to Discover
+              <ArrowRight className="size-4" aria-hidden />
+            </Link>
+          ) : (
+            <>
+              <TrackedLink cta="sticky_m_founder" href="/signup?role=founder" className="rounded-xl bg-signal py-3 text-center font-medium text-white">
+                I&apos;m raising
+              </TrackedLink>
+              <TrackedLink cta="sticky_m_investor" href="/signup?role=investor" className="rounded-xl border-2 border-ink py-2.5 text-center font-medium">
+                I&apos;m investing
+              </TrackedLink>
+            </>
+          )}
         </div>
       </div>
     </>

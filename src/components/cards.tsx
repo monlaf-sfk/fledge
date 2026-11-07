@@ -1,3 +1,4 @@
+import { Check, Lock } from "lucide-react";
 import {
   INVESTOR_TYPE_LABEL,
   STAGE_LABEL,
@@ -33,9 +34,9 @@ function Reasons({ fit, dark = false }: { fit: Fit; dark?: boolean }) {
       {fit.reasons.map((r) => (
         <li
           key={r}
-          className={`rounded-full px-2.5 py-1 ${dark ? "bg-paper/10 text-paper/80" : "bg-moss/10 text-moss"}`}
+          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 ${dark ? "bg-paper/10 text-paper/80" : "bg-moss/10 text-moss"}`}
         >
-          ✓ {r}
+          <Check className="size-3 shrink-0" strokeWidth={3} aria-hidden /> {r}
         </li>
       ))}
     </ul>
@@ -45,10 +46,7 @@ function Reasons({ fit, dark = false }: { fit: Fit; dark?: boolean }) {
 function LockedNote({ text }: { text: string }) {
   return (
     <p className="mt-5 flex items-center gap-2 rounded-xl border border-dashed border-current/30 px-3 py-2 text-xs opacity-70">
-      <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden fill="none" stroke="currentColor" strokeWidth="1.6">
-        <rect x="3" y="7" width="10" height="7" rx="1.5" />
-        <path d="M5.5 7V5a2.5 2.5 0 015 0v2" />
-      </svg>
+      <Lock className="size-3 shrink-0" aria-hidden />
       {text}
     </p>
   );

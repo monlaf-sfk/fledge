@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import { InvestorCardView, StartupCardView } from "@/components/cards";
 import { loadMatch } from "@/lib/matches";
 import { requireOnboarded } from "@/lib/session";
@@ -54,7 +55,9 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
   return (
     <main className="mx-auto grid max-w-6xl gap-8 px-5 pb-24 pt-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
       <section className="space-y-5">
-        <Link href="/matches" className="text-sm text-ink-soft hover:text-ink">← All matches</Link>
+        <Link href="/matches" className="inline-flex items-center gap-1.5 text-sm text-ink-soft hover:text-ink">
+          <ArrowLeft className="size-3.5" aria-hidden /> All matches
+        </Link>
         {founder ? (
           <InvestorCardView i={match.investor} locked={false} />
         ) : (

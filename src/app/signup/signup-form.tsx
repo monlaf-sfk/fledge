@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useActionState, useEffect, useState } from "react";
+import { ArrowRight } from "lucide-react";
 import { signUp, type AuthState, type Role } from "@/app/auth/actions";
 import { Field, FormAlert } from "@/components/auth-shell";
 import { anonId } from "@/components/public-track";
@@ -21,8 +22,9 @@ export function SignupForm({ initialRole }: { initialRole?: Role }) {
     return (
       <div className="space-y-6">
         <FormAlert message={state.message} />
-        <Link href="/login" className="inline-block font-medium underline decoration-signal decoration-2 underline-offset-4">
-          Go to log in →
+        <Link href="/login" className="inline-flex items-center gap-1.5 font-medium underline decoration-signal decoration-2 underline-offset-4">
+          Go to log in
+          <ArrowRight className="size-4" aria-hidden />
         </Link>
       </div>
     );

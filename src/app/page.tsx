@@ -3,12 +3,27 @@
 // animated fit-score gauge, pop-in comparison, staggered market rings, iris-reveal CTA.
 // Motion engine: src/components/landing/motion.tsx. Static under prefers-reduced-motion.
 import Link from "next/link";
+import {
+  ArrowLeftRight,
+  ArrowRight,
+  Check,
+  Heart,
+  Lock,
+  LockOpen,
+  Minus,
+  Sparkle,
+  Star,
+  X,
+} from "lucide-react";
+import { AccountButton } from "@/components/landing/account-button";
 import { Constellation } from "@/components/landing/constellation";
+import { FaqItem } from "@/components/landing/faq-item";
 import { LandingMotion } from "@/components/landing/motion";
 import { StickyCta } from "@/components/landing/sticky-cta";
 import { SwipeDemo } from "@/components/landing/swipe-demo";
 import { Logo } from "@/components/logo";
 import { PageView, TrackedLink } from "@/components/public-track";
+import { createClient } from "@/lib/supabase/server";
 
 const marquee = ["Pre-seed", "Seed", "Fintech", "B2B SaaS", "Edtech", "Almaty", "Astana", "Tashkent", "Bishkek", "Angels", "Accelerators", "Climate", "Marketplaces"];
 
@@ -62,12 +77,18 @@ function Mark({ v, d }: { v: boolean | string; d: number }) {
   if (v === true)
     return (
       <span data-reveal="pop" className="pop inline-grid h-8 w-8 place-items-center rounded-full bg-signal text-white" style={{ "--d": d } as Vars}>
-        ✓
+        <Check className="size-4" strokeWidth={3} aria-hidden />
       </span>
     );
-  if (v === false) return <span className="text-ink/25">—</span>;
+  if (v === false) return <span className="text-ink/25"><Minus className="size-5" aria-hidden /></span>;
   return <span className="font-mono text-xs uppercase tracking-wider text-ink-soft">{v}</span>;
 }
+
+const SWIPE_ACTIONS = [
+  { Icon: X, label: "Pass" },
+  { Icon: Star, label: "Save" },
+  { Icon: Heart, label: "Interested" },
+];
 
 function HeroCards() {
   return (
@@ -95,15 +116,18 @@ function HeroCards() {
             </div>
           ))}
         </dl>
-        <p className="mt-4 rounded-xl border border-dashed border-ink/25 px-3 py-2 text-xs text-ink-soft">🔒 Identity &amp; deck unlock after match</p>
+        <p className="mt-4 flex items-center gap-2 rounded-xl border border-dashed border-ink/25 px-3 py-2 text-xs text-ink-soft">
+          <Lock className="size-3.5 shrink-0" aria-hidden />
+          Identity &amp; deck unlock after match
+        </p>
       </div>
       <div className="stamp absolute left-1/2 top-1/2 z-10 whitespace-nowrap rounded-xl border-4 border-signal bg-ink/40 px-5 py-2 font-display text-4xl font-semibold italic text-signal backdrop-blur-sm">
         It&apos;s a match
       </div>
       <div className="absolute bottom-0 left-1/2 flex -translate-x-1/2 gap-3">
-        {[["✕", "Pass"], ["☆", "Save"], ["♥", "Interested"]].map(([icon, label], i) => (
+        {SWIPE_ACTIONS.map(({ Icon, label }, i) => (
           <span key={label} className={`flex h-12 items-center gap-2 rounded-full px-4 text-sm font-medium shadow-lg ${i === 2 ? "bg-signal text-white" : "bg-white text-ink"}`}>
-            <span aria-hidden>{icon}</span>
+            <Icon className="size-4" aria-hidden />
             {label}
           </span>
         ))}
@@ -112,7 +136,22 @@ function HeroCards() {
   );
 }
 
-export default function Home() {
+// Auth-aware header: failures fall back to the signed-out state so the public
+// landing page never breaks when Supabase is unavailable.
+async function isSignedIn() {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    return Boolean(user);
+  } catch {
+    return false;
+  }
+}
+
+export default async function Home() {
+  const signedIn = await isSignedIn();
   const words = PROBLEM.split(" ");
   // ~200 messages, under 3% answered → 6 lit dots (Assignment 3, respondent R4)
   const hitList = [17, 54, 88, 121, 149, 186];
@@ -122,7 +161,7 @@ export default function Home() {
     <main id="top" className="overflow-x-clip">
       <PageView name="landing_viewed" />
       <LandingMotion />
-      <StickyCta />
+      <StickyCta signedIn={signedIn} />
 
       {/* ======================================================= HERO (dark, layered) */}
       <section data-spotlight className="relative isolate min-h-[100svh] overflow-hidden bg-ink text-paper">
@@ -158,16 +197,24 @@ export default function Home() {
             <a href="#how" className="hidden px-3 py-2 text-paper/60 hover:text-paper sm:inline">How it works</a>
             <a href="#try" className="hidden px-3 py-2 text-paper/60 hover:text-paper sm:inline">Try it</a>
             <a href="#faq" className="hidden px-3 py-2 text-paper/60 hover:text-paper lg:inline">FAQ</a>
-            <Link href="/login" className="px-2 py-2 font-medium hover:text-signal sm:px-3">Log in</Link>
-            <TrackedLink data-magnetic cta="nav_join" href="/signup" className="rounded-full bg-paper px-3 py-2 font-medium text-ink sm:px-4 transition hover:bg-signal hover:text-white">
-              Join free
-            </TrackedLink>
+            {signedIn ? (
+              <AccountButton className="ml-1 grid size-10 place-items-center rounded-full border border-paper/25 text-paper transition hover:border-signal hover:text-signal" />
+            ) : (
+              <>
+                <Link href="/login" className="px-2 py-2 font-medium hover:text-signal sm:px-3">Log in</Link>
+                <TrackedLink data-magnetic cta="nav_join" href="/signup" className="rounded-full bg-paper px-3 py-2 font-medium text-ink sm:px-4 transition hover:bg-signal hover:text-white">
+                  Join free
+                </TrackedLink>
+              </>
+            )}
           </nav>
         </header>
 
         <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 pb-24 pt-8 md:grid-cols-[1.15fr_1fr] md:pt-14">
           <div>
-            <p className="rise font-mono text-xs uppercase tracking-[0.25em] text-paper/50">Founder ↔ investor matching · Central Asia</p>
+            <p className="rise font-mono text-xs uppercase tracking-[0.25em] text-paper/50">
+              Founder <ArrowLeftRight className="inline size-3 align-[-1px]" aria-hidden /> investor matching · Central Asia
+            </p>
             <h1 className="mt-6 font-display text-[clamp(3.2rem,8.5vw,7rem)] font-medium leading-[0.9] tracking-[-0.035em]">
               <span className="converge-l" style={{ "--d": 100 } as Vars}>Stop</span>{" "}
               <span className="converge-r" style={{ "--d": 220 } as Vars}>cold-</span>
@@ -188,20 +235,20 @@ export default function Home() {
                   <span className="block font-mono text-[10px] uppercase tracking-[0.2em] opacity-70">I&apos;m raising</span>
                   <span className="text-lg font-medium">Join as founder</span>
                 </span>
-                <span className="text-2xl transition group-hover:translate-x-1">→</span>
+                <span className="text-2xl transition group-hover:translate-x-1"><ArrowRight className="size-6" aria-hidden /></span>
               </TrackedLink>
               <TrackedLink data-magnetic cta="hero_investor" href="/signup?role=investor" className="group inline-flex items-center justify-between gap-6 rounded-2xl border-2 border-paper/40 px-6 py-4 transition hover:border-paper">
                 <span>
                   <span className="block font-mono text-[10px] uppercase tracking-[0.2em] opacity-60">I&apos;m investing</span>
                   <span className="text-lg font-medium">Join as investor</span>
                 </span>
-                <span className="text-2xl transition group-hover:translate-x-1">→</span>
+                <span className="text-2xl transition group-hover:translate-x-1"><ArrowRight className="size-6" aria-hidden /></span>
               </TrackedLink>
             </div>
             <ul className="rise mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm text-paper/60" style={{ animationDelay: "1000ms" }}>
               {["Free during beta", "1-minute setup", "Identity hidden until a match"].map((t) => (
                 <li key={t} className="flex items-center gap-2">
-                  <span className="grid h-4 w-4 place-items-center rounded-full bg-signal/25 text-[10px] text-signal">✓</span>
+                  <span className="grid h-4 w-4 place-items-center rounded-full bg-signal/25 text-signal"><Check className="size-2.5" strokeWidth={3} aria-hidden /></span>
                   {t}
                 </li>
               ))}
@@ -225,7 +272,7 @@ export default function Home() {
         <div className="marquee flex w-max gap-10 whitespace-nowrap font-display text-2xl italic">
           {[...marquee, ...marquee].map((m, i) => (
             <span key={i} className="flex items-center gap-10">
-              {m} <span className="not-italic text-ink">✦</span>
+              {m} <Sparkle className="size-6 shrink-0 text-ink" aria-hidden />
             </span>
           ))}
         </div>
@@ -390,9 +437,9 @@ export default function Home() {
                     <p className="mt-2 text-xs text-paper/70">Pre-seed to seed, Central Asia.</p>
                   </div>
                   <div className="mt-6 grid grid-cols-3 gap-2 text-center text-xs">
-                    <span className="rounded-xl bg-white py-3">✕</span>
-                    <span className="rounded-xl bg-white py-3">☆</span>
-                    <span className="rounded-xl bg-signal py-3 text-white ring-4 ring-signal/30">♥</span>
+                    <span className="grid place-items-center rounded-xl bg-white py-3"><X className="size-5" aria-hidden /></span>
+                    <span className="grid place-items-center rounded-xl bg-white py-3"><Star className="size-5" aria-hidden /></span>
+                    <span className="grid place-items-center rounded-xl bg-signal py-3 text-white ring-4 ring-signal/30"><Heart className="size-5" aria-hidden /></span>
                   </div>
                 </div>
                 {/* 3: match */}
@@ -402,7 +449,10 @@ export default function Home() {
                     <p className="w-4/5 rounded-2xl rounded-bl-sm bg-paper-deep px-3 py-2">Hi! Your thesis fits our seed round.</p>
                     <p className="ml-auto w-4/5 rounded-2xl rounded-br-sm bg-ink px-3 py-2 text-paper">Great — call on Tuesday?</p>
                   </div>
-                  <p className="mt-6 rounded-xl border border-dashed border-signal/50 px-3 py-2 text-[11px] text-ink-soft">🔓 Deck, LinkedIn and contacts unlocked</p>
+                  <p className="mt-6 flex items-center gap-2 rounded-xl border border-dashed border-signal/50 px-3 py-2 text-[11px] text-ink-soft">
+                    <LockOpen className="size-3.5 shrink-0" aria-hidden />
+                    Deck, LinkedIn and contacts unlocked
+                  </p>
                 </div>
               </div>
             </div>
@@ -540,7 +590,7 @@ export default function Home() {
             <ul className={`mt-8 space-y-3 ${b.dark ? "text-paper/80" : "text-ink-soft"}`}>
               {b.points.map((pt) => (
                 <li key={pt} className="flex gap-3">
-                  <span className="text-signal">✓</span>
+                  <Check className="mt-0.5 size-4 shrink-0 text-signal" strokeWidth={3} aria-hidden />
                   {pt}
                 </li>
               ))}
@@ -549,9 +599,10 @@ export default function Home() {
               data-magnetic
               cta={b.id}
               href={b.href}
-              className={`mt-10 inline-flex w-fit rounded-full px-6 py-3 font-medium transition ${b.dark ? "bg-signal text-white hover:bg-paper hover:text-ink" : "bg-ink text-paper hover:bg-signal"}`}
+              className={`mt-10 inline-flex w-fit items-center gap-2 rounded-full px-6 py-3 font-medium transition ${b.dark ? "bg-signal text-white hover:bg-paper hover:text-ink" : "bg-ink text-paper hover:bg-signal"}`}
             >
-              {b.cta} →
+              {b.cta}
+              <ArrowRight className="size-4" aria-hidden />
             </TrackedLink>
           </article>
         ))}
@@ -632,13 +683,7 @@ export default function Home() {
         <h2 data-reveal="up" className="font-display text-[clamp(2.4rem,5vw,4rem)] leading-[0.95] tracking-tight">Questions</h2>
         <div className="mt-10 divide-y divide-line border-y border-line">
           {FAQ.map((q) => (
-            <details key={q.q} className="group py-5">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-6 text-lg font-medium">
-                {q.q}
-                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-ink/20 transition group-open:rotate-45">+</span>
-              </summary>
-              <p className="mt-3 max-w-2xl text-ink-soft">{q.a}</p>
-            </details>
+            <FaqItem key={q.q} q={q.q} a={q.a} />
           ))}
         </div>
       </section>
@@ -653,11 +698,13 @@ export default function Home() {
               The right match beats a hundred cold messages.
             </h2>
             <div className="mt-10 flex flex-wrap justify-center gap-3">
-              <TrackedLink data-magnetic cta="footer_founder" href="/signup?role=founder" className="rounded-full bg-ink px-7 py-4 text-lg font-medium text-paper transition hover:bg-paper hover:text-ink">
-                I&apos;m a founder →
+              <TrackedLink data-magnetic cta="footer_founder" href="/signup?role=founder" className="inline-flex items-center gap-2 rounded-full bg-ink px-7 py-4 text-lg font-medium text-paper transition hover:bg-paper hover:text-ink">
+                I&apos;m a founder
+                <ArrowRight className="size-5" aria-hidden />
               </TrackedLink>
-              <TrackedLink data-magnetic cta="footer_investor" href="/signup?role=investor" className="rounded-full border-2 border-white px-7 py-4 text-lg font-medium transition hover:bg-white hover:text-signal">
-                I&apos;m an investor →
+              <TrackedLink data-magnetic cta="footer_investor" href="/signup?role=investor" className="inline-flex items-center gap-2 rounded-full border-2 border-white px-7 py-4 text-lg font-medium transition hover:bg-white hover:text-signal">
+                I&apos;m an investor
+                <ArrowRight className="size-5" aria-hidden />
               </TrackedLink>
             </div>
           </div>

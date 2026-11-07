@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { ArrowRight } from "lucide-react";
 import {
   ColumnLabels,
   DailyColumns,
@@ -61,7 +62,7 @@ function Card({ title, question, children }: { title: string; question: string; 
   );
 }
 
-function Kpi({ label, value, detail, meaning }: { label: string; value: string; detail: string; meaning: string }) {
+function Kpi({ label, value, detail, meaning }: { label: React.ReactNode; value: string; detail: string; meaning: string }) {
   return (
     <div className="flex flex-col bg-paper p-6">
       <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-ink-soft">{label}</p>
@@ -177,7 +178,11 @@ export default async function InsightsPage() {
           meaning="How often a card gets Interested. Low = the feed shows irrelevant profiles."
         />
         <Kpi
-          label="Interested → match"
+          label={
+            <span className="inline-flex items-center gap-1">
+              Interested <ArrowRight className="size-3" aria-hidden /> match
+            </span>
+          }
           value={fmtPct(pct(all.matched, all.interested))}
           detail={`${all.matched} of ${all.interested} users who pressed Interested`}
           meaning="Users whose interest was returned. Low = one side is not active enough (liquidity)."
@@ -195,7 +200,11 @@ export default async function InsightsPage() {
           meaning="Signed-in users with any action this week; returning users show early retention."
         />
         <Kpi
-          label="Landing → sign-up"
+          label={
+            <span className="inline-flex items-center gap-1">
+              Landing <ArrowRight className="size-3" aria-hidden /> sign-up
+            </span>
+          }
           value={fmtPct(pct(t.signups_tracked, t.visitors))}
           detail={`${t.signups_tracked} of ${t.visitors} visitors`}
           meaning="Share of landing visitors who create an account. Tracking started 16 Oct 2026."

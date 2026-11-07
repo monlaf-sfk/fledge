@@ -14,7 +14,7 @@ export function ActionForm({
   children,
 }: {
   action: (prev: State, formData: FormData) => Promise<State>;
-  submitLabel: string;
+  submitLabel: React.ReactNode;
   pendingLabel: string;
   children: React.ReactNode;
 }) {
@@ -36,7 +36,7 @@ export function ActionForm({
         <button
           type="submit"
           disabled={pending}
-          className="w-full rounded-2xl bg-signal px-6 py-4 text-lg font-medium text-white shadow-lg transition hover:bg-ink disabled:opacity-60"
+          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-signal px-6 py-4 text-lg font-medium text-white shadow-lg transition hover:bg-ink disabled:opacity-60"
         >
           {pending ? pendingLabel : submitLabel}
         </button>

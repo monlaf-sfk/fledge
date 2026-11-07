@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Heart, Lock, X } from "lucide-react";
 import { trackPublic } from "@/app/track-actions";
 import { anonId } from "@/components/public-track";
 import { captureClient } from "@/components/analytics-provider";
@@ -164,8 +165,9 @@ export function SwipeDemo() {
                     <li key={t} className="rounded-full border border-paper/25 px-3 py-1">{t}</li>
                   ))}
                 </ul>
-                <p className="absolute bottom-6 left-6 right-6 rounded-xl border border-dashed border-paper/25 px-3 py-2 text-xs text-paper/60">
-                  🔒 Contacts unlock after a mutual match
+                <p className="absolute bottom-6 left-6 right-6 flex items-center gap-2 rounded-xl border border-dashed border-paper/25 px-3 py-2 text-xs text-paper/60">
+                  <Lock className="size-3 shrink-0" aria-hidden />
+                  Contacts unlock after a mutual match
                 </p>
                 {top && (
                   <>
@@ -210,17 +212,17 @@ export function SwipeDemo() {
           onClick={() => decide("left")}
           disabled={!card}
           aria-label="Pass"
-          className="grid h-16 w-16 place-items-center rounded-full border border-ink/15 bg-white text-2xl shadow-lg transition hover:scale-110 disabled:opacity-40"
+          className="grid h-16 w-16 place-items-center rounded-full border border-ink/15 bg-white text-ink shadow-lg transition hover:scale-110 disabled:opacity-40"
         >
-          ✕
+          <X className="size-6" aria-hidden />
         </button>
         <button
           onClick={() => decide("right")}
           disabled={!card}
           aria-label="Interested"
-          className="grid h-16 w-16 place-items-center rounded-full bg-signal text-2xl text-white shadow-lg shadow-signal/40 transition hover:scale-110 disabled:opacity-40"
+          className="grid h-16 w-16 place-items-center rounded-full bg-signal text-white shadow-lg shadow-signal/40 transition hover:scale-110 disabled:opacity-40"
         >
-          ♥
+          <Heart className="size-6" aria-hidden />
         </button>
       </div>
       <p className="mt-3 text-center font-mono text-xs text-ink-soft">Drag the card or use the buttons · demo profiles</p>

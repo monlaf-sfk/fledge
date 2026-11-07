@@ -2,14 +2,24 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import {
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  Heart,
+  Lightbulb,
+  Star,
+  X,
+  type LucideIcon,
+} from "lucide-react";
 import { InvestorCardView, StartupCardView } from "@/components/cards";
 import type { FeedItem } from "@/lib/feed";
 import { swipe, trackCardView, type SwipeAction } from "./actions";
 
-const BUTTONS: { action: SwipeAction; label: string; icon: string; key: string; cls: string }[] = [
-  { action: "pass", label: "Pass", icon: "✕", key: "←", cls: "bg-white text-ink hover:bg-paper-deep" },
-  { action: "save", label: "Save", icon: "☆", key: "↓", cls: "bg-white text-ink hover:bg-paper-deep" },
-  { action: "interested", label: "Interested", icon: "♥", key: "→", cls: "bg-signal text-white hover:bg-ink" },
+const BUTTONS: { action: SwipeAction; label: string; Icon: LucideIcon; Key: LucideIcon; cls: string }[] = [
+  { action: "pass", label: "Pass", Icon: X, Key: ArrowLeft, cls: "bg-white text-ink hover:bg-paper-deep" },
+  { action: "save", label: "Save", Icon: Star, Key: ArrowDown, cls: "bg-white text-ink hover:bg-paper-deep" },
+  { action: "interested", label: "Interested", Icon: Heart, Key: ArrowRight, cls: "bg-signal text-white hover:bg-ink" },
 ];
 
 const EXIT: Record<SwipeAction, string> = {
@@ -156,10 +166,16 @@ export function Deck({ items, other }: { items: FeedItem[]; other: string }) {
     <div>
       {hint && (
         <div role="note" className="mb-5 flex items-start gap-4 rounded-2xl border border-signal/40 bg-signal/10 p-4 text-sm">
-          <span aria-hidden className="text-xl">💡</span>
+          <Lightbulb className="mt-0.5 size-5 shrink-0 text-signal" aria-hidden />
           <div className="flex-1 space-y-1">
             <p><b>Drag the card right</b> to show interest, <b>left</b> to skip it.</p>
-            <p><b>Save</b> keeps it for later in Saved. Buttons and ← ↓ → keys work too.</p>
+            <p className="flex flex-wrap items-center gap-1">
+              <b>Save</b> keeps it for later in Saved. Buttons and
+              <ArrowLeft className="size-3" aria-hidden />
+              <ArrowDown className="size-3" aria-hidden />
+              <ArrowRight className="size-3" aria-hidden />
+              keys work too.
+            </p>
           </div>
           <button onClick={dismissHint} className="shrink-0 rounded-full bg-ink px-4 py-1.5 font-medium text-paper hover:bg-signal">
             Got it
@@ -215,18 +231,16 @@ export function Deck({ items, other }: { items: FeedItem[]; other: string }) {
       </div>
 
       <div className="mt-6 grid grid-cols-3 gap-3">
-        {BUTTONS.map((b) => (
+        {BUTTONS.map(({ action, label, Icon, Key, cls }) => (
           <button
-            key={b.action}
-            onClick={() => act(b.action)}
+            key={action}
+            onClick={() => act(action)}
             disabled={Boolean(leaving)}
-            className={`flex flex-col items-center gap-1 rounded-2xl border border-ink/10 px-3 py-4 font-medium shadow-sm transition disabled:opacity-60 ${b.cls}`}
+            className={`flex flex-col items-center gap-1 rounded-2xl border border-ink/10 px-3 py-4 font-medium shadow-sm transition disabled:opacity-60 ${cls}`}
           >
-            <span className="text-xl" aria-hidden>
-              {b.icon}
-            </span>
-            {b.label}
-            <span className="hidden font-mono text-[10px] opacity-50 sm:block">{b.key}</span>
+            <Icon className="size-6" aria-hidden />
+            {label}
+            <span className="hidden font-mono text-[10px] opacity-50 sm:block"><Key className="size-3" aria-hidden /></span>
           </button>
         ))}
       </div>
@@ -261,8 +275,9 @@ export function Deck({ items, other }: { items: FeedItem[]; other: string }) {
             </p>
             <p className="mt-2 text-sm text-ink-soft">Full profile and chat are now unlocked.</p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
-              <Link href={`/matches/${match.id}`} className="rounded-full bg-ink px-6 py-3 font-medium text-paper hover:bg-signal">
-                Open chat →
+              <Link href={`/matches/${match.id}`} className="inline-flex items-center justify-center gap-2 rounded-full bg-ink px-6 py-3 font-medium text-paper hover:bg-signal">
+                Open chat
+                <ArrowRight className="size-4" aria-hidden />
               </Link>
               <button onClick={() => setMatch(null)} className="rounded-full border-2 border-ink px-6 py-3 font-medium">
                 Keep swiping
